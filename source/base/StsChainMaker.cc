@@ -1,5 +1,8 @@
 #include "StsChainMaker.hh"
 
+#include "StsDst.hh"
+#include "StsRunInfo.hh"
+
 StsChainMaker* StsChainMaker::mInstance = nullptr;
 
 StsChainMaker* StsChainMaker::GetChainMaker() {
@@ -11,6 +14,12 @@ StsChainMaker* StsChainMaker::GetChainMaker() {
 StsChainMaker::StsChainMaker(int ioMode, const char* fileName) 
 : StsMaker("StsChainMaker", "StsChainMaker"), mIoMode(ioMode), mInputFileName(fileName)
 {
+    mFlag = true;
+    mOutputFileName = "StsDst";
+    mNFiles = -1;
+    mEventNum = 0;
+
+    mStsDstArray = 0;
 }
 
 StsChainMaker::~StsChainMaker()
@@ -19,18 +28,16 @@ StsChainMaker::~StsChainMaker()
 
 bool StsChainMaker::Init() 
 {  
-    // mNFiles = -1;
-    // iEvent = 0;
-
-    // if(mIoMode==ioRead){
-    //     cout << "StsChainMaker::Init() -- begin StsChainMaker construction for Read mode" << endl;
-    //     openRead();
-    // }
-    // else if(mIoMode==ioWrite){
-    //     cout << "StsChainMaker::Init() -- begin StsChainMaker construction for Write mode" << endl;
-    //     if(openWrite() == kStErr){return kStErr;}
-    // }
+    if(mIoMode==ioRead){
+        cout << "StsChainMaker::Init() -- begin StsChainMaker construction for Read mode" << endl;
+        if(Read() == false){mFlag = false; return false;}
+    }
+    else if(mIoMode==ioWrite){
+        cout << "StsChainMaker::Init() -- begin StsChainMaker construction for Write mode" << endl;
+        if(Write() == false){mFlag = false; return false;}
+    }
     cout << "StsChainMaker::Init()  --- test " << endl;
+
 
     InitMakers();
 
@@ -40,7 +47,7 @@ bool StsChainMaker::Init()
 bool StsChainMaker::Make() 
 {
     cout << "StsChainMaker::Make()" << endl;
-
+    if(mFlag == false){return false;}
 
     TIter iter(GetListOfTasks());
     StsMaker* maker;
@@ -49,27 +56,31 @@ bool StsChainMaker::Make()
         maker -> Make();
     }
 
-
-
+    // mStsDstArray -> Clear("C");
+    mDst = (StsDst*)mStsDstArray -> ConstructedAt(0); // test
+    mDst -> Init();
+    StsRunInfo* runInfo = mDst -> GetRunInfo();
+    runInfo -> SetTest(mEventNum);
+    
+    cout << " test: " << mEventNum << endl;
     // // Initialize a filled data.
     // clear();
 
     // // =================== Fill data ===================
-    // fillData();
+    FillDst();
 
-    // iEvent++;
+    mEventNum++;
     return 1;
 }
 
 bool StsChainMaker::Finish() 
 {
-    // if(mIoMode==ioWrite){
-        
-    //     cout << Form("StsChainMaker::Finish() -- Writing and closing %s",mOutputFileName.Data()) << endl;
-    //     mTFile -> cd();
-    //     mOutTree -> Write();
-    //     mTFile -> Close();
-    // }
+    if(mIoMode==ioWrite){
+        cout << Form("StsChainMaker::Finish() -- Writing and closing %s",mOutputFileName.Data()) << endl;
+        mTFile -> cd();
+        mTree -> Write();
+        mTFile -> Close();
+    }
 
     return 1;
 }
@@ -92,8 +103,8 @@ bool StsChainMaker::clear()
 
 // Int_t StsChainMaker::getAnalEntries(){return mChain->GetEntries();}
 
-// Int_t StsChainMaker::openRead()
-// {
+Int_t StsChainMaker::Read()
+{
 //     mNFiles = 0;
 //     if(mInputFileName.Length() == 0){
 //         // No input file
@@ -139,10 +150,22 @@ bool StsChainMaker::clear()
 //         }
 //     }
 //     return 1;
-// }
+}
 
-// Int_t StsChainMaker::openWrite()
-// {
+Int_t StsChainMaker::Write()
+{
+    TString currentPath = gSystem -> pwd();
+    mTFile = new TFile(Form("%s/test.root", currentPath.Data()), "recreate");
+    mTree = new TTree("StsDst", "StsDst");
+    mStsDstArray = new TClonesArray("StsDst");
+
+    mTree -> Branch("StsDst", &mStsDstArray);
+
+    InitDst();
+
+    return 1;
+
+
 //     TString streamTypeName;
 //     TString runNumber;
 //     TString daqNumber;
@@ -260,13 +283,21 @@ bool StsChainMaker::clear()
 //     mOutTree -> Branch("StRHICfPi0Events",&mOutDataArray);
 
 //     return 1;
-// }
+}
 
 // Int_t StsChainMaker::getNFiles(){return mNFiles;}
 
 
-// // void StsChainMaker::fillData()
-// // {
-// //     mOutTree -> Fill();
-// // }
+Int_t StsChainMaker::InitDst()
+{
+    // mTree -> Branch("StsRunInfo", &mStsDstArray);
+    
+}
+
+
+Int_t StsChainMaker::FillDst()
+{
+    mTree -> Fill();
+    return 1;
+}
 

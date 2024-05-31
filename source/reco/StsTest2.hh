@@ -16,7 +16,7 @@ class StsTest2 : public StsMaker
         bool Make();
         bool Finish();
 
-    ClassDef(StsTest2, 1)
+    ClassDef(StsTest2, 0)
 };
 
 #endif
