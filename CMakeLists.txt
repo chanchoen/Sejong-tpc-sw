@@ -7,6 +7,7 @@ set(COMPILE_SOURCE_DIRECTORY_LIST
   ${CMAKE_SOURCE_DIR}/source/decoder
   ${CMAKE_SOURCE_DIR}/source/reco
   ${CMAKE_SOURCE_DIR}/source/geometry
+  ${CMAKE_SOURCE_DIR}/source/dst
 
   CACHE INTERNAL ""
 )

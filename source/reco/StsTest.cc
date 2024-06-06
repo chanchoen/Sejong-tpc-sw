@@ -8,19 +8,19 @@ StsTest::StsTest()
 {
 }
 
-bool StsTest::Init() 
+Int_t StsTest::Init() 
 {
     cout << "StsTest::Init() --- testtest" << endl;
-    return true;
+    return 1;
 }
 
-bool StsTest::Make() 
+Int_t StsTest::Make() 
 {
-    return true;
+    return 1;
 }
 
 
-bool StsTest::Finish()
+Int_t StsTest::Finish()
 {
-    return true;
+    return 1;
 }

@@ -1,15 +1,16 @@
 #include "StsMaker.hh"
 
-#include <iostream>
-using namespace std;
-
 StsMaker::StsMaker()
 :TTask()
 {
 }
 
 StsMaker::StsMaker(const char* name, const char *title)
-:TTask(name, title)
+:TTask("StsMaker", "StsMaker")
+{
+}
+
+StsMaker::~StsMaker()
 {
 }
 
@@ -18,12 +19,7 @@ void StsMaker::Add(TTask *maker)
     TTask::Add(maker);
 }
 
-bool StsMaker::Init() 
-{
-    return true;
-}
-
-bool StsMaker::InitMakers()
+Int_t StsMaker::InitMakers()
 {
     TIter iter(GetListOfTasks());
     StsMaker* maker;
@@ -32,24 +28,14 @@ bool StsMaker::InitMakers()
         cout << "StsMaker::InitMakers() --- Initializing " << maker -> GetName() << "." << endl;
         if (maker -> Init() == false) {
             cout << "StsMaker::InitMakers() --- Initialization failed!" << endl;
-            return false;
+            return 0;
         }
     }
 
-    return true;
+    return 1;
 }
 
-bool StsMaker::Make()
-{
-    return true;
-}
-
-bool StsMaker::Finish()
-{
-    return true;
-}
-
-bool StsMaker::FinishMakers()
+Int_t StsMaker::FinishMakers()
 {
     TIter iter(GetListOfTasks());
     StsMaker* maker;
@@ -58,9 +44,24 @@ bool StsMaker::FinishMakers()
         cout << "StsMaker::FinishMakers() --- Finishing " << maker -> GetName() << "." << endl;
         if (maker -> Finish() == false) {
             cout << "StsMaker::FinishMakers() --- Finish failed!" << endl;
-            return false;
+            return 0;
         }
     }
 
-  return true;
+  return 1;
+}
+
+Int_t StsMaker::Init() 
+{
+    return 1;
+}
+
+Int_t StsMaker::Make()
+{
+    return 1;
+}
+
+Int_t StsMaker::Finish()
+{
+    return 1;
 }

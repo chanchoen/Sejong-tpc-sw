@@ -4,7 +4,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class StsDecoder+;
-#pragma link C++ class StsDAQFrame+;
+#pragma link C++ class StsDst+;
+#pragma link C++ class StsRunInfo+;
 
 #endif

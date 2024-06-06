@@ -3,8 +3,12 @@
 
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <algorithm>
+#include <vector>
+#include <queue>
 
+#include "TString.h"
 #include "TMath.h"
 #include "TVector3.h"
 
@@ -16,6 +20,8 @@ class StsUtil
         StsUtil();
         ~StsUtil();
 
+    protected:
+        queue<TString> GetDAQFileQueue(TString inputFile = "");
 
     ClassDef(StsUtil, 0)
 };
