@@ -1,29 +1,33 @@
 #include "StsDst.hh"
-
 #include "StsRunInfo.hh"
-
-// StsRunInfo* StsDst::mRunInfo = 0;
 
 ClassImp(StsDst)
 
 StsDst::StsDst()
 {
+    Init();
 }
 
 StsDst::~StsDst()
 {
+    if(mRunInfo){
+        delete mRunInfo;
+        mRunInfo = 0;
+    }
 }
 
-void StsDst::Init()
+Int_t StsDst::Init()
 {
     if(!mRunInfo){
         mRunInfo = new StsRunInfo();
     }
+
+    return 1;
 }
 
-void StsDst::Clear()
+void StsDst::Clear(Option_t* option)
 {
-    if(mRunInfo){mRunInfo = 0;}
+    mRunInfo -> Clear();
 }
 
-// static StsRunInfo* StsDst::GetRunInfo(){return mRunInfo;}
+StsRunInfo* StsDst::GetRunInfo(){return mRunInfo;}

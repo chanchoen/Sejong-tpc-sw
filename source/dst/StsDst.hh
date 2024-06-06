@@ -6,7 +6,6 @@
 #include "TClonesArray.h"
 
 class StsRunInfo;
-class StsTPCRaw;
 
 using namespace std;
 
@@ -14,17 +13,15 @@ class StsDst : public TObject
 {
     public:
         StsDst();
-        ~StsDst();
+        virtual ~StsDst();
 
-        void Init();
-        void Clear();
+        Int_t Init();
+        virtual void Clear(Option_t* option = "");
 
-        StsRunInfo* GetRunInfo(){return mRunInfo;}
-
-
+        StsRunInfo* GetRunInfo();
 
     private:
-        StsRunInfo* mRunInfo;
+        StsRunInfo* mRunInfo = 0;
 
 
     ClassDef(StsDst, 1)

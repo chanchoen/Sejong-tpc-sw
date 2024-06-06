@@ -12,9 +12,9 @@ class StsTest2 : public StsMaker
         StsTest2();
         virtual ~StsTest2() {};
 
-        bool Init();
-        bool Make();
-        bool Finish();
+        Int_t Init();
+        Int_t Make();
+        Int_t Finish();
 
     ClassDef(StsTest2, 0)
 };

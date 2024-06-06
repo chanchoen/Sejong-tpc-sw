@@ -10,7 +10,7 @@ StsRunInfo::~StsRunInfo()
 {
 }
 
-void StsRunInfo::Clear()
+void StsRunInfo::Clear(Option_t* option)
 {
     test = 0;
 }

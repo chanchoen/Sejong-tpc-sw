@@ -11,7 +11,7 @@ class StsRunInfo : public TObject
         StsRunInfo();
         ~StsRunInfo();
 
-        void Clear();
+        virtual void Clear(Option_t* option = "");
 
         void SetTest(int val);
         Int_t GetTest();

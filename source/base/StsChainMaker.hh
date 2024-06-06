@@ -15,7 +15,10 @@
 #include "TClonesArray.h"
 
 class StsDst;
-class StsRunInfo;
+class StsTrigger;
+class StsDecoder;
+
+// class StsRunInfo;
 // class StsTPCRaw;
 
 using namespace std;
@@ -29,24 +32,27 @@ class StsChainMaker : public StsMaker, public StsUtil
 		StsChainMaker(int ioMode=1, const char* fileName="");
 		~StsChainMaker();
 
-		bool Init();
-		bool Make();
-		bool Finish();
-		bool clear();
+		Int_t Init();
+		Int_t Make();
+		Int_t Finish();
+		Int_t Clear();
+		
+		StsDst* GetDst();
+		StsTrigger* GetTrigger();
 
-
-
-		// set parameters
-		// voi
-
-		// for read a AnalRHICfPi0 files
-		// Int_t getAnalEntries();
-		// Int_t getNFiles();
-		// StRHICfPi0Events* getRHICfPi0Events(Int_t idx);
+		void SetDAQFiles(TString file = "");
+		void SetTriggerDate(TString date = "");
+		void SetEventNum(Int_t eventNum = -1);
 
 	private:
-		Int_t Read();
-		Int_t Write();
+		Int_t InitRead();
+		Int_t ReadMake();
+		
+		Int_t InitWrite();
+		Int_t WriteMake();
+
+		Int_t InitGeometry();
+
 		Int_t InitDst();
 		Int_t FillDst();
 		Int_t DstList();
@@ -56,18 +62,20 @@ class StsChainMaker : public StsMaker, public StsUtil
 		// Data writing structrue
 		bool mFlag;
 		int mIoMode;
+		TString mTrigDate;
+		TString mDAQFile;
 		TString mInputFileName;
 		TString mOutputFileName;
 		Int_t mNFiles;
 		Int_t mEventNum;
+		Int_t mEvent;
 
-
-		TFile* mTFile;
-		TTree* mTree;
-		TClonesArray* mStsDstArray;
-		StsDst* mDst;
-		// StsRunInfo* mRunInfo;
-
+		TFile* mTFile = 0;
+		TTree* mTree = 0;
+		TClonesArray* mStsDstArray = 0;
+		StsDst* mDst = 0;
+		StsTrigger* mTrigGeo = 0;
+		StsDecoder* mDecoder = 0;
 
 	protected:
 		enum ioMode {ioRead, ioWrite};
