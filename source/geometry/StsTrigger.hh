@@ -1,7 +1,7 @@
 #ifndef StsTrigger_HH
 #define StsTrigger_HH
 
-#include "StsUtil.hh"
+#include "StsTPCDrum.hh"
 
 class StsTrigger
 {
@@ -10,9 +10,7 @@ class StsTrigger
         virtual ~StsTrigger();
 
         virtual Int_t Init();
-
-    private:
-
+        virtual StsTPCDrum* GetTPCGeometry();
 };
 
 #endif

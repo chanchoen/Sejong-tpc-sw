@@ -14,16 +14,32 @@
 
 using namespace std;
 
+#define TIMEBUCKET 512
+
 class StsUtil
 {
     public:
+        enum kStageFlag{
+            kRawStage = 0,
+            kRecoStage = 1
+        };
+
+        enum kIoMode{
+            kRead = 0, 
+            kWrite = 1, 
+            kOnline = 2
+        };
+
+        // enum kTrigSignal{
+            
+        // };
+
         StsUtil();
-        ~StsUtil();
+        virtual ~StsUtil();
 
     protected:
         queue<TString> GetDAQFileQueue(TString inputFile = "");
 
-    ClassDef(StsUtil, 0)
 };
 
 #endif

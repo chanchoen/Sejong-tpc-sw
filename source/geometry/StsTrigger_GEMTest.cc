@@ -1,5 +1,4 @@
 #include "StsTrigger_GEMTest.hh"
-#include "StsTPCDrum.hh"
 
 StsTrigger_GEMTest::StsTrigger_GEMTest()
 {

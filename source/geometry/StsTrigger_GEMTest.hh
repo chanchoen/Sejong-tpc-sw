@@ -5,8 +5,6 @@
 
 using namespace std;
 
-class StsTPCDrum;
-
 class StsTrigger_GEMTest : public StsTrigger
 {
     public:
@@ -19,12 +17,10 @@ class StsTrigger_GEMTest : public StsTrigger
 
     private:
         StsTPCDrum* mTPC = 0;
-
-    ClassDef(StsTrigger_GEMTest, 0);
 };
 
 #endif
 
 
-// StsTrigger_GEMTest is stemp of TPC Drum GEM test type experiment on 24/Jul 
+// StsTrigger_GEMTest is stemp of TPC Drum GEM test type experiment on 24/May
 // *** Do not change the any setting configuration ***

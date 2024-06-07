@@ -2,6 +2,7 @@
 #define StsRunInfo_HH
 
 #include "TObject.h"
+#include "TString.h"
 
 using namespace std;
 
@@ -11,13 +12,26 @@ class StsRunInfo : public TObject
         StsRunInfo();
         ~StsRunInfo();
 
-        virtual void Clear(Option_t* option = "");
+        void Clear(Option_t* option = "");
 
-        void SetTest(int val);
-        Int_t GetTest();
+        void SetTriggerName(TString trigName);
+        void SetDate(TString date);
+
+        TString GetTriggerName();
+        TString GetDate();
 
     private:
-        int test;
+        TString mTrigName;
+        TString mDate;
+
+        // to be update some run operation
+        // TString mGasType; // 
+        // Int_t mGasPressure; // [Torr]
+        // Int_t mGEMVolt; // [V]
+        // Int_t mDynamicRange // [C]
+        // etc...
+
+
 
 
     ClassDef(StsRunInfo, 1)

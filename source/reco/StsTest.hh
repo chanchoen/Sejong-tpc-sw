@@ -10,7 +10,7 @@ class StsTest : public StsMaker
 {
     public:
         StsTest();
-        virtual ~StsTest() {};
+        ~StsTest() {};
 
         Int_t Init();
         Int_t Make();

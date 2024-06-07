@@ -6,5 +6,8 @@
 
 #pragma link C++ class StsDst+;
 #pragma link C++ class StsRunInfo+;
+#pragma link C++ class StsEventInfo+;
+#pragma link C++ class StsRawTPCPad+;
+#pragma link C++ class StsRecoTPCPad+;
 
 #endif

@@ -5,8 +5,10 @@
 #include "StsDst.hh"
 #include "StsRunInfo.hh"
 
+#include "StsTriggerManager.hh"
 #include "StsTrigger.hh"
-#include "StsTrigger_GEMTest.hh"
+
+ClassImp(StsChainMaker);
 
 StsChainMaker* StsChainMaker::mInstance = nullptr;
 
@@ -19,17 +21,15 @@ StsChainMaker* StsChainMaker::GetChainMaker() {
 StsChainMaker::StsChainMaker(int ioMode, const char* fileName) 
 : StsMaker("StsChainMaker", "StsChainMaker"), mIoMode(ioMode), mInputFileName(fileName)
 {
-    mFlag = true;
-    mTrigDate = "";
+    mInstance = this;
+
+    mStageFlag = kRawStage;
+    mTrigType = "";
     mDAQFile = "";
     mInputFileName = "";
     mOutputFileName = "StsDst";
     mNFiles = -1;
     mEventNum = -1;
-
-    mStsDstArray = 0;
-    mDst = 0;
-    mTrigGeo = 0;
 }
 
 StsChainMaker::~StsChainMaker()
@@ -38,13 +38,13 @@ StsChainMaker::~StsChainMaker()
 
 Int_t StsChainMaker::Init() 
 {  
-    if(mIoMode==ioRead){
+    if(mIoMode==kRead){
         cout << "StsChainMaker::Init() -- begin StsChainMaker construction for Read mode" << endl;
-        if(InitRead() == false){mFlag = false; return 0;}
+        if(InitRead() == false){return 0;}
     }
-    else if(mIoMode==ioWrite){
+    else if(mIoMode==kWrite){
         cout << "StsChainMaker::Init() -- begin StsChainMaker construction for Write mode" << endl;
-        if(InitWrite() == false){mFlag = false; return 0;}
+        if(InitWrite() == false){return 0;}
     }
     cout << "StsChainMaker::Init()  --- test " << endl;
 
@@ -58,32 +58,23 @@ Int_t StsChainMaker::Make()
 {
     cout << "StsChainMaker::Make()" << endl;
 
-    if(mIoMode==ioRead){
+    if(mIoMode==kRead){
         ReadMake();
     }
-    else if(mIoMode==ioWrite){
+    else if(mIoMode==kWrite){
         WriteMake();
     }
 
-
-
-    TIter iter(GetListOfTasks());
-    StsMaker* maker;
-    while ( (maker = dynamic_cast<StsMaker*>(iter())) ) {
-        cout << "StsChainMaker::Make() --- test " << maker -> GetName() << "." << endl;
-        maker -> Make();
-    }
-
-    mEventNum++;
     return 1;
 }
 
 Int_t StsChainMaker::Finish() 
 {
-    if(mIoMode==ioWrite){
+    if(mIoMode==kWrite){
         cout << Form("StsChainMaker::Finish() -- Writing and closing %s",mOutputFileName.Data()) << endl;
         mTFile -> cd();
         mTree -> Write();
+        GetRunInfo() -> Write();
         mTFile -> Close();
     }
 
@@ -92,18 +83,18 @@ Int_t StsChainMaker::Finish()
 
 Int_t StsChainMaker::Clear()
 {
-    mStsDstArray -> Clear("C");
-    mDst = (StsDst*)mStsDstArray -> ConstructedAt(0); // test
-    mDecoder -> Clear();
+    mDst -> Clear();
+    if(mDecoder){mDecoder -> Clear();}
 
     return 1;
 }
 
 StsDst* StsChainMaker::GetDst(){return mDst;}
-StsTrigger* StsChainMaker::GetTrigger(){return mTrigGeo;}
+StsRunInfo* StsChainMaker::GetRunInfo(){return mDst->GetRunInfo();}
+StsTrigger* StsChainMaker::GetTrigger(){return mTrigManager->GetTrigger();}
 
 void StsChainMaker::SetDAQFiles(TString file){mDAQFile = file;}
-void StsChainMaker::SetTriggerDate(TString date){mTrigDate = date;}
+void StsChainMaker::SetTriggerType(TString type){mTrigType = type;}
 void StsChainMaker::SetEventNum(Int_t eventNum){mEventNum = eventNum;}
 
 
@@ -171,43 +162,44 @@ Int_t StsChainMaker::InitRead()
 
 Int_t StsChainMaker::InitWrite()
 {
+    mStageFlag = kRawStage;
+    mTrigManager = new StsTriggerManager(mTrigType);
+    mDst = new StsDst(mIoMode);
+    mDst -> SetStageFlag(mStageFlag);
+    mDst -> SetTrigger(GetTrigger());
+    mDst -> Init();
+
     // Output file initialization
     TString currentPath = gSystem -> pwd();
     mTFile = new TFile(Form("%s/test.root", currentPath.Data()), "recreate");
     mTree = new TTree("StsDst", "StsDst");
-    mStsDstArray = new TClonesArray("StsDst");
-    
-    mTree -> Branch("StsDst", &mStsDstArray);
 
-    InitGeometry();
+    mDst -> CreateDstArray(mTree);
 
     // Decoder initialization
     mDecoder = new StsDecoder();
     mDecoder -> Init();
-        
 
     return 1;
 }
 
 Int_t StsChainMaker::WriteMake()
 {
-    
+    cout << "StsChainMaker::WriteMake()" << endl;
     Clear();
+
     mDecoder->Make();
 
+    TIter iter(GetListOfTasks());
+    StsMaker* maker;
+    while ( (maker = dynamic_cast<StsMaker*>(iter())) ) {
+        cout << "StsChainMaker::Make() --- test " << maker -> GetName() << "." << endl;
+        maker -> Make();
+    }
 
     FillDst();
 
     return 1;
-}
-
-Int_t StsChainMaker::InitGeometry()
-{
-    mTrigDate.ToUpper();
-    if(mTrigDate == "GEMTEST"){
-        mTrigGeo = new StsTrigger_GEMTest();
-        return 1;
-    }
 }
 
 Int_t StsChainMaker::FillDst()

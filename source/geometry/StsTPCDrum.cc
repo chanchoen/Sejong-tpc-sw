@@ -2,20 +2,38 @@
 
 StsTPCDrum::StsTPCDrum()
 {
-    mIsMainTest = 999;
+    mTPCForm = kMainRun;
 }
 
 Int_t StsTPCDrum::Init() 
 {
-    if(mIsMainTest == 1){ // for main pad form
+    if(mTPCForm == kMainRun){ // for main pad form
 
     }
-    else if(mIsMainTest == 0){ // for GEM test form
-        
+    else if(mTPCForm == kGemTestRun){ // for GEM test form
+        mAsAdNum = 1;
+        mChannelNum = 272; // including FPN
+        mPadNum = 256;
+        mLayerNum = 16;
+        mRowNum = 16;
+        mPadHeight = 0.;
+        mPadWidth = 0.;
+        mPadWidth2 = 0.;
+        mPadGap = 0.;
     }
 
     return 1;
 }
 
-void StsTPCDrum::SetGemTestForm(){mIsMainTest = 0;}
-void StsTPCDrum::SetMainForm(){mIsMainTest = 1;}
+void StsTPCDrum::SetMainForm(){mTPCForm = kMainRun;}
+void StsTPCDrum::SetGemTestForm(){mTPCForm = kGemTestRun;}
+
+
+Int_t StsTPCDrum::GetAsAdNum(){return mAsAdNum;}
+Int_t StsTPCDrum::GetChannelNum(){return mChannelNum;}
+Int_t StsTPCDrum::GetPadNum(){return mPadNum;}
+Int_t StsTPCDrum::GetLayerNum(){return mLayerNum;}
+Int_t StsTPCDrum::GetRowNum(){return mRowNum;}
+// Double_t StsTPCDrum::GetPadHeight(int idx);
+// Double_t StsTPCDrum::GetPadWidth(int idx);
+// Double_t StsTPCDrum::GetPadGap(int idx);

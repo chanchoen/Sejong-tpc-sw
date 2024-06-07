@@ -12,15 +12,12 @@ StsRunInfo::~StsRunInfo()
 
 void StsRunInfo::Clear(Option_t* option)
 {
-    test = 0;
+    TString mTrigName = "";
+    TString mDate = "";
 }
 
-void StsRunInfo::SetTest(int val)
-{
-    test = val;
-}
+void StsRunInfo::SetTriggerName(TString trigName){mTrigName = trigName;}
+void StsRunInfo::SetDate(TString date){mDate = date;}
 
-Int_t StsRunInfo::GetTest()
-{
-    return test;
-}
+TString StsRunInfo::GetTriggerName(){return mTrigName;}
+TString StsRunInfo::GetDate(){mDate;}
