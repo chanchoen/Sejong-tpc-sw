@@ -4,7 +4,6 @@
 #include "StsMaker.hh"
 #include "StsUtil.hh"
 
-#include <iostream>
 #include "TROOT.h"
 #include "TSystem.h"
 #include "TString.h"
@@ -15,11 +14,10 @@
 #include "TClonesArray.h"
 
 class StsDst;
+class StsRunInfo;
+class StsTriggerManager;
 class StsTrigger;
 class StsDecoder;
-
-// class StsRunInfo;
-// class StsTPCRaw;
 
 using namespace std;
 using namespace TMath;
@@ -29,7 +27,7 @@ class StsChainMaker : public StsMaker, public StsUtil
 	public: 
 		static StsChainMaker* GetChainMaker();
 
-		StsChainMaker(int ioMode=1, const char* fileName="");
+		StsChainMaker(int ioMode=kWrite, const char* fileName="");
 		~StsChainMaker();
 
 		Int_t Init();
@@ -38,10 +36,11 @@ class StsChainMaker : public StsMaker, public StsUtil
 		Int_t Clear();
 		
 		StsDst* GetDst();
+		StsRunInfo* GetRunInfo();
 		StsTrigger* GetTrigger();
 
 		void SetDAQFiles(TString file = "");
-		void SetTriggerDate(TString date = "");
+		void SetTriggerType(TString type = "");
 		void SetEventNum(Int_t eventNum = -1);
 
 	private:
@@ -56,13 +55,14 @@ class StsChainMaker : public StsMaker, public StsUtil
 		Int_t InitDst();
 		Int_t FillDst();
 		Int_t DstList();
+		Int_t FillRunInfo();
 
 		static StsChainMaker *mInstance;
 
 		// Data writing structrue
-		bool mFlag;
+		bool mStageFlag;
 		int mIoMode;
-		TString mTrigDate;
+		TString mTrigType;
 		TString mDAQFile;
 		TString mInputFileName;
 		TString mOutputFileName;
@@ -72,13 +72,12 @@ class StsChainMaker : public StsMaker, public StsUtil
 
 		TFile* mTFile = 0;
 		TTree* mTree = 0;
-		TClonesArray* mStsDstArray = 0;
 		StsDst* mDst = 0;
-		StsTrigger* mTrigGeo = 0;
+		StsTriggerManager* mTrigManager = 0;
 		StsDecoder* mDecoder = 0;
 
 	protected:
-		enum ioMode {ioRead, ioWrite};
+
 
 	ClassDef(StsChainMaker,0);
 };

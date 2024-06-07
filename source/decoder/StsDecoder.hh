@@ -1,13 +1,12 @@
 #ifndef StsDecoder_HH
 #define StsDecoder_HH
 
-#include <iostream>
-#include <queue>
 #include "StsUtil.hh"
 
 using namespace std;
 
 class StsDst;
+class StsTrigger;
 class StsDAQFrame;
 
 class StsDecoder : public StsUtil
@@ -23,6 +22,7 @@ class StsDecoder : public StsUtil
 
     private:
         StsDst* mDst = 0;
+        StsTrigger* mTrigger = 0;
         StsDAQFrame* mDAQFrame = 0;
 
         TString mFilePath;
