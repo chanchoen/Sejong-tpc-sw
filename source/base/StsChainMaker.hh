@@ -6,7 +6,6 @@
 
 #include "TROOT.h"
 #include "TSystem.h"
-#include "TString.h"
 #include "TChain.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -15,6 +14,7 @@
 
 class StsDst;
 class StsRunInfo;
+class StsEventInfo;
 class StsTriggerManager;
 class StsTrigger;
 class StsDecoder;
@@ -22,12 +22,12 @@ class StsDecoder;
 using namespace std;
 using namespace TMath;
 
-class StsChainMaker : public StsMaker, public StsUtil
+class StsChainMaker : public StsMaker
 {
 	public: 
-		static StsChainMaker* GetChainMaker();
+		static StsChainMaker* GetChainMaker(int ioMode=kWrite, const char* file="");
 
-		StsChainMaker(int ioMode=kWrite, const char* fileName="");
+		StsChainMaker(int ioMode=kWrite, const char* file="");
 		~StsChainMaker();
 
 		Int_t Init();
@@ -37,18 +37,25 @@ class StsChainMaker : public StsMaker, public StsUtil
 		
 		StsDst* GetDst();
 		StsRunInfo* GetRunInfo();
+		StsEventInfo* GetEventInfo();
 		StsTrigger* GetTrigger();
 
-		void SetDAQFiles(TString file = "");
+		void SetExperiment(TString exp = "");
 		void SetTriggerType(TString type = "");
+		void SetExcuteRun(TString run = "ALL");
+		void SetRejectRun(TString run = "");
 		void SetEventNum(Int_t eventNum = -1);
+		void SetInputFile(TString inputFile = "");
+		void SetOutputPath(TString outPath = "");
 
 	private:
+		Int_t InitRun();
+
 		Int_t InitRead();
-		Int_t ReadMake();
+		Int_t MakeRead();
 		
 		Int_t InitWrite();
-		Int_t WriteMake();
+		Int_t MakeWrite();
 
 		Int_t InitGeometry();
 
@@ -57,16 +64,25 @@ class StsChainMaker : public StsMaker, public StsUtil
 		Int_t DstList();
 		Int_t FillRunInfo();
 
-		static StsChainMaker *mInstance;
+		Int_t InitChecker();
+
+		Int_t Print();
+
+		static StsChainMaker* mInstance;
 
 		// Data writing structrue
-		bool mStageFlag;
-		int mIoMode;
+		Int_t mStageFlag;
+		Int_t mIoMode;
+		
+		TString mExpName;
 		TString mTrigType;
-		TString mDAQFile;
-		TString mInputFileName;
-		TString mOutputFileName;
-		Int_t mNFiles;
+		TString mExcuteRun;
+		TString mRejectRun;
+		TString mInputFile;
+		TString mOutputPath;
+		TString mOutputFile;
+
+		RunList mRunList;
 		Int_t mEventNum;
 		Int_t mEvent;
 

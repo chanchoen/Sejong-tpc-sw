@@ -2,6 +2,7 @@
 #define StsRecoTPCPad_HH
 
 #include "TObject.h"
+#include "StsUtil.hh"
 
 using namespace std;
 
@@ -9,9 +10,9 @@ class StsRecoTPCPad : public TObject
 {
     public:
         StsRecoTPCPad();
-        ~StsRecoTPCPad();
+        virtual ~StsRecoTPCPad();
 
-        void Clear(Option_t* option = "");
+        virtual void Clear(Option_t* option = "");
         
     private:
 

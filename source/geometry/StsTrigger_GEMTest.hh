@@ -9,11 +9,10 @@ class StsTrigger_GEMTest : public StsTrigger
 {
     public:
         StsTrigger_GEMTest();
-        ~StsTrigger_GEMTest();
+        virtual ~StsTrigger_GEMTest();
 
-        Int_t Init();
-        
-        StsTPCDrum* GetTPCGeometry();
+        virtual Int_t Init();
+        virtual StsTPCDrum* GetTPCGeometry();
 
     private:
         StsTPCDrum* mTPC = 0;

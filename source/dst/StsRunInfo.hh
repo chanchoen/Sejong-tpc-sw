@@ -10,9 +10,9 @@ class StsRunInfo : public TObject
 {
     public:
         StsRunInfo();
-        ~StsRunInfo();
+        virtual ~StsRunInfo();
 
-        void Clear(Option_t* option = "");
+        virtual void Clear(Option_t* option = "");
 
         void SetTriggerName(TString trigName);
         void SetDate(TString date);

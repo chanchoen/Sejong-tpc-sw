@@ -10,26 +10,27 @@ class StsEventInfo : public TObject
 {
     public:
         StsEventInfo();
-        ~StsEventInfo();
+        virtual ~StsEventInfo();
 
-        void Clear(Option_t* option = "");
+        virtual void Clear(Option_t* option = "");
 
+        void SetRunNumber(UInt_t runNum);
         void SetEventNumber(UInt_t eventNum);
         void SetEventTime(UInt_t eventTime);
         void SetEventDiffTime(UInt_t eventDiffTime);
-
+        
+        UInt_t GetRunNumber();
         UInt_t GetEventNumber();
         UInt_t GetEventTime();
         UInt_t GetEventDiffTime();
 
     private:
+        UInt_t mRunNumber;
         UInt_t mEventNumber;
         UInt_t mEventTime;
         UInt_t mEventDiffTime;
 
         // trigger signal to be updated
-
-
 
     ClassDef(StsEventInfo, 1)
 };
