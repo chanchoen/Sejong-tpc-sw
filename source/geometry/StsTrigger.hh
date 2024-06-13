@@ -10,7 +10,10 @@ class StsTrigger
         virtual ~StsTrigger();
 
         virtual Int_t Init();
+        virtual Int_t GetCoBoNum();
+        virtual Int_t GetAsAdNum();
         virtual StsTPCDrum* GetTPCGeometry();
+
 };
 
 #endif

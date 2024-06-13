@@ -3,13 +3,15 @@
 
 #include "StsUtil.hh"
 
+class TH2Poly;
+
 using namespace std;
 
-class StsTPCDrum : public StsUtil
+class StsTPCDrum
 {
     enum TPCForm{
-        kMainRun,
-        kGemTestRun
+        kMainRun = 0,
+        kGemTestRun = 1
     };
 
     public:
@@ -30,8 +32,14 @@ class StsTPCDrum : public StsUtil
         Double_t GetPadWidth(int idx);
         Double_t GetPadGap(int idx);
 
+        void GetPolyGeometry(TH2Poly* poly);
+
     protected:
-        Int_t mTPCForm;
+        void InitMapping_ZAPtoGEMTest();
+        void InitMapping_HyperZAPtoGEMTest();
+        void InitMapping_HyperZAPtoMainRun();
+
+        Bool_t mTPCForm;
 
         Int_t mAsAdNum;
         Int_t mChannelNum;

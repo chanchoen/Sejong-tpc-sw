@@ -15,19 +15,19 @@ class StsRecoTPCPad;
 
 using namespace std;
 
-class StsDst : public TObject, public StsUtil
+class StsDst : public TObject
 {
     public:
         StsDst(int ioMode=kWrite);
-        ~StsDst();
+        virtual ~StsDst();
 
-        void Clear(Option_t* option = "");
+        virtual void Clear(Option_t* option = "");
 
         Int_t Init();
         Int_t CreateDstArray(TTree* tree);
         Int_t LinkDstArray(TTree* tree);
 
-        void SetStageFlag(int stageFlag = kRawStage);
+        void SetStageFlag(int stageFlag = kDaqStage);
         void SetTrigger(StsTrigger* trig);
 
         StsRunInfo* GetRunInfo();
@@ -43,7 +43,6 @@ class StsDst : public TObject, public StsUtil
         StsEventInfo* mEventInfo = 0;
         TClonesArray* mRawTPCPadArray = 0;
         TClonesArray* mRecoTPCPadArray = 0;
-        
         
     ClassDef(StsDst, 1)
 };

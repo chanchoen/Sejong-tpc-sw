@@ -2,6 +2,7 @@
 #define StsDAQFrame_HH
 
 #include <iostream>
+#include <string.h>
 
 using namespace std;
 
@@ -40,21 +41,41 @@ typedef struct HeaderFrame{
     uint8_t lastCell_3[2];  // 87 bytes
 }HeaderFrame;
 
+typedef struct ItemFrame{
+    uint32_t items;
+}ItemFrame;
+
 class StsDAQFrame
 {
-    public:
-
     public:
         StsDAQFrame();
         ~StsDAQFrame();
 
-        HeaderFrame GetHeaderFrame();
-        uint32_t GetItemFrame();
-        
-    private:
-        // Header
-        HeaderFrame mHeaderFrame;
-        uint32_t mItemFrame;
+        void Clear();
+
+        int mMetaType; // [bytes]
+        int mFrameSize;
+        int mDataSource;
+        int mFrameType; // 1: partial readout or zero suppressed mode, 2: full readout mode
+        int mRevision;
+        int mHeaderSize;// [bytes]
+        int mItemSize; // [bytes]
+        int mNitems;        
+        int mEventID;    
+        int mPrivEventID;        
+        int mCoboID;             
+        int mAsadID;             
+        int mReadOffset;         
+        int mStatus;             
+        int mMultip[nAGET];      
+        int mWindowOut;          
+        int mLastCell[nAGET];    
+        bool mIsHit[nAGET][72];  
+        uint64_t mEventTime; // [10 ns]
+        uint64_t mDiffTime; // [10 ns]
+        uint64_t mPrevTime; // [10 ns]
+
+        uint16_t mADC[nAGET][nCHAN][nBUCK];
 };
 
 #endif

@@ -4,7 +4,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class StsTest+;
-#pragma link C++ class StsTest2+;
+#pragma link C++ class StsTPCPadDrawMaker+;
+#pragma link C++ class StsTPCOnlineMaker+;
 
 #endif

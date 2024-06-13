@@ -17,5 +17,7 @@ Int_t StsTrigger_GEMTest::Init()
     mTPC -> SetGemTestForm();
     mTPC -> Init();
 }
+Int_t StsTrigger_GEMTest::GetCoBoNum(){return mCoBoNum;}
+Int_t StsTrigger_GEMTest::GetAsAdNum(){return mAsAdNum;}
 
 StsTPCDrum* StsTrigger_GEMTest::GetTPCGeometry(){return mTPC;}

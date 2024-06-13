@@ -4,6 +4,7 @@
 
 #include "StsDst.hh"
 #include "StsRunInfo.hh"
+#include "StsEventInfo.hh"
 
 #include "StsTriggerManager.hh"
 #include "StsTrigger.hh"
@@ -12,24 +13,18 @@ ClassImp(StsChainMaker);
 
 StsChainMaker* StsChainMaker::mInstance = nullptr;
 
-StsChainMaker* StsChainMaker::GetChainMaker() {
+StsChainMaker* StsChainMaker::GetChainMaker(int ioMode, const char* file){
   if (mInstance != nullptr)
     return mInstance;
-  return new StsChainMaker();
+  return new StsChainMaker(ioMode, file);
 }
 
-StsChainMaker::StsChainMaker(int ioMode, const char* fileName) 
-: StsMaker("StsChainMaker", "StsChainMaker"), mIoMode(ioMode), mInputFileName(fileName)
+StsChainMaker::StsChainMaker(int ioMode, const char* file) 
+: StsMaker("StsChainMaker", "StsChainMaker"), mIoMode(ioMode), mStageFlag(-999), mExpName(""), mTrigType(""), mExcuteRun(""), mRejectRun(""),
+  mInputFile(file), mOutputPath(""), mOutputFile("StsDst"), mEventNum(-1), mEvent(0)
 {
     mInstance = this;
-
-    mStageFlag = kRawStage;
-    mTrigType = "";
-    mDAQFile = "";
-    mInputFileName = "";
-    mOutputFileName = "StsDst";
-    mNFiles = -1;
-    mEventNum = -1;
+    mRunList.clear();
 }
 
 StsChainMaker::~StsChainMaker()
@@ -40,14 +35,12 @@ Int_t StsChainMaker::Init()
 {  
     if(mIoMode==kRead){
         cout << "StsChainMaker::Init() -- begin StsChainMaker construction for Read mode" << endl;
-        if(InitRead() == false){return 0;}
+        if(!InitRead()){exit(0);}
     }
     else if(mIoMode==kWrite){
         cout << "StsChainMaker::Init() -- begin StsChainMaker construction for Write mode" << endl;
-        if(InitWrite() == false){return 0;}
+        if(!InitWrite()){exit(0);}
     }
-    cout << "StsChainMaker::Init()  --- test " << endl;
-
 
     InitMakers();
 
@@ -59,10 +52,22 @@ Int_t StsChainMaker::Make()
     cout << "StsChainMaker::Make()" << endl;
 
     if(mIoMode==kRead){
-        ReadMake();
+        MakeRead();
     }
     else if(mIoMode==kWrite){
-        WriteMake();
+        for(int run=0; run<mRunList.size(); run++){
+            if(mRunList[run].second.size() == 0){
+                cout << "StsChainMaker::Make() --- run: " << mRunList[run].first << " has been no files. run is skipped..." << endl;
+                continue;
+            }
+
+            InitWriteDst(run);
+
+            MakeWrite();
+
+            FinishWriteDst(run);
+        }
+
     }
 
     return 1;
@@ -70,136 +75,134 @@ Int_t StsChainMaker::Make()
 
 Int_t StsChainMaker::Finish() 
 {
-    if(mIoMode==kWrite){
-        cout << Form("StsChainMaker::Finish() -- Writing and closing %s",mOutputFileName.Data()) << endl;
-        mTFile -> cd();
-        mTree -> Write();
-        GetRunInfo() -> Write();
-        mTFile -> Close();
-    }
-
     return 1;
 }
 
 Int_t StsChainMaker::Clear()
 {
     mDst -> Clear();
-    if(mDecoder){mDecoder -> Clear();}
 
     return 1;
 }
 
 StsDst* StsChainMaker::GetDst(){return mDst;}
 StsRunInfo* StsChainMaker::GetRunInfo(){return mDst->GetRunInfo();}
+StsEventInfo* StsChainMaker::GetEventInfo(){return mDst->GetEventInfo();}
 StsTrigger* StsChainMaker::GetTrigger(){return mTrigManager->GetTrigger();}
 
-void StsChainMaker::SetDAQFiles(TString file){mDAQFile = file;}
 void StsChainMaker::SetTriggerType(TString type){mTrigType = type;}
+void StsChainMaker::SetExcuteRun(TString run){mExcuteRun = run;}
+void StsChainMaker::SetRejectRun(TString run){mRejectRun = run;}
 void StsChainMaker::SetEventNum(Int_t eventNum){mEventNum = eventNum;}
+void StsChainMaker::SetInputFile(TString inputFile){mInputFile = inputFile;}
+void StsChainMaker::SetOutputPath(TString outPath){mOutputPath = outPath;}
 
+Int_t StsChainMaker::InitRun()
+{
+    if(mExpName == "" && mInputFile != ""){
+        mRunList = GetRunList(mInputFile, mRejectRun, mStageFlag);
+        return 1;
+    }
+    else if(mExpName != "" && mInputFile == ""){
+        // mRunList = GetExpRunList(mExpName, mRejectRun, mStageFlag);
+        return 1;
+    }
+    else if(mExpName == "" && mInputFile == "" && mExcuteRun != ""){
+        mRunList = GetRunList(mExcuteRun, mRejectRun, mStageFlag);
+        return 1;
+    }
+    else{
+        cout << "StsChainMaker::InitRun() --- Warnning!!! Make sure the run list setup" << endl;
+        cout << "                             Your input parameters" << endl;
+        cout << "                             Experiment: " << mExpName << endl;
+        cout << "                             InputFile : " << mInputFile <<  endl;
+        cout << "                             ExcuteRun : " <<  mExcuteRun << endl;
+        return 0;
+    }
 
-
-// StRHICfPi0Events* StsChainMaker::getRHICfPi0Events(Int_t idx)
-// {
-//     if(idx >= mChain->GetEntries()){cout << "StsChainMaker::getRHICfPi0Events() -- wrong index !! " << endl;}
-//     mChain -> GetEntry(idx);
-//     StRHICfPi0Events* rhicfPi0Events = (StRHICfPi0Events*)mReadDataArray -> At(0);
-//     return rhicfPi0Events;
-// }
-
-// Int_t StsChainMaker::getAnalEntries(){return mChain->GetEntries();}
+    return 0;
+}
 
 Int_t StsChainMaker::InitRead()
 {
-//     mNFiles = 0;
-//     if(mInputFileName.Length() == 0){
-//         // No input file
-//         cout << "StsChainMaker::openRead() --- Input file is not a existing ... " << endl;
-//         return kStErr;
-//     }
-//     else{
-//         if(!mChain){mChain = new TChain("StsData");}
-
-//         std::string const dirFile = mInputFileName.Data();
-//         if( dirFile.find(".list") != std::string::npos || dirFile.find(".lis") != std::string::npos ){
-//             std::ifstream inputStream( dirFile.c_str() );
-//             if(!inputStream) {cout << "StsChainMaker::openRead() --- ERROR: Cannot open list file " << dirFile << endl;}
-
-//             std::string file;
-//             size_t pos;
-//             while(getline(inputStream, file)){
-//                 pos = file.find_first_of(" ");
-//                 if (pos != std::string::npos ) file.erase(pos,file.length()-pos);
-//                 if(file.find("StsData") != std::string::npos) {
-//                     TFile* ftmp = TFile::Open(file.c_str());
-//                     if(ftmp && !ftmp->IsZombie() && ftmp->GetNkeys()) {
-//                         cout << " Read in AnalRHICfPi0 file " << file << endl;
-//                         mChain->Add(file.c_str());
-//                         ++mNFiles;
-//                     } 
-//                     if (ftmp) {
-//                         ftmp->Close();
-//                     } 
-//                 }
-//             }
-//             cout << " Total " << mNFiles << " files have been read in. " << endl;
-//         }
-//         else if(dirFile.find("AnalRHICfPi0") != std::string::npos){
-//             mChain->Add(dirFile.c_str());
-//             mNFiles = 1;
-//             cout << " Total " << mNFiles << " files have been read in " << dirFile << endl;
-//         }
-
-//         if(mChain){
-//             mReadDataArray = new TClonesArray("StRHICfPi0Events");
-//             mChain -> SetBranchAddress("StRHICfPi0Events", &mReadDataArray);
-//         }
-//     }
-//     return 1;
-
     return 1;
 }
 
 Int_t StsChainMaker::InitWrite()
 {
-    mStageFlag = kRawStage;
+    mStageFlag = kDaqStage;
     mTrigManager = new StsTriggerManager(mTrigType);
     mDst = new StsDst(mIoMode);
     mDst -> SetStageFlag(mStageFlag);
     mDst -> SetTrigger(GetTrigger());
     mDst -> Init();
 
+    if(!InitRun()){return 0;}
+
+    mDecoder = new StsDecoder();
+
+    return 1;
+}
+
+Int_t StsChainMaker::MakeWrite()
+{
+    for(int i=0; i<10; i++){
+        mDecoder->Make(); // test 
+    }
+
+
+    // int testNum = 0;
+    // while(mDecoder->Make()){
+    //     if(!mDecoder->SkipEvent()){continue;}
+    //     Clear();
+
+    //     // testNum++;
+
+
+    //     // TIter iter(GetListOfTasks());
+    //     // StsMaker* maker;
+    //     // while ( (maker = dynamic_cast<StsMaker*>(iter())) ) {
+    //     //     cout << "StsChainMaker::Make() --- test " << maker -> GetName() << "." << endl;
+    //     //     maker -> Make();
+    //     // }
+
+    //     // FillDst();
+    // }
+
+    return 1;
+}
+
+Int_t StsChainMaker::InitWriteDst(int runIdx)
+{
     // Output file initialization
-    TString currentPath = gSystem -> pwd();
-    mTFile = new TFile(Form("%s/test.root", currentPath.Data()), "recreate");
+    TString path = "";
+    if(mOutputPath==""){path = AddDash(gSystem -> pwd());}
+    else{path = AddDash(mOutputPath);}
+
+    TString runID = TString::Itoa(mRunList[runIdx].first, 10);
+    if(mRunList[runIdx].first == 0){runID = "000000000";}
+    mOutputFile = path+"StsDst_"+runID+"_raw"+".root";
+
+    mTFile = new TFile(Form("%s", mOutputFile.Data()), "recreate");
     mTree = new TTree("StsDst", "StsDst");
 
     mDst -> CreateDstArray(mTree);
 
     // Decoder initialization
-    mDecoder = new StsDecoder();
-    mDecoder -> Init();
 
-    return 1;
+    mDecoder -> SetRunFile(mRunList[runIdx].first, mRunList[runIdx].second);
+    mDecoder -> Init();
 }
 
-Int_t StsChainMaker::WriteMake()
+Int_t StsChainMaker::FinishWriteDst(int runIdx)
 {
-    cout << "StsChainMaker::WriteMake()" << endl;
-    Clear();
-
-    mDecoder->Make();
-
-    TIter iter(GetListOfTasks());
-    StsMaker* maker;
-    while ( (maker = dynamic_cast<StsMaker*>(iter())) ) {
-        cout << "StsChainMaker::Make() --- test " << maker -> GetName() << "." << endl;
-        maker -> Make();
+    if(mIoMode==kWrite){
+        cout << Form("StsChainMaker::Finish() --- Writing and closing Run: %i, %s", mRunList[runIdx].first,  mOutputFile.Data()) << endl;
+        mTFile -> cd();
+        mTree -> Write();
+        GetRunInfo() -> Write();
+        mTFile -> Close();
     }
-
-    FillDst();
-
-    return 1;
 }
 
 Int_t StsChainMaker::FillDst()
@@ -207,4 +210,3 @@ Int_t StsChainMaker::FillDst()
     mTree -> Fill();
     return 1;
 }
-

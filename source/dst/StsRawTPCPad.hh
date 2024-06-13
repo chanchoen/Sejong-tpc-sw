@@ -6,13 +6,13 @@
 
 using namespace std;
 
-class StsRawTPCPad : public TObject, public StsUtil
+class StsRawTPCPad : public TObject
 {
     public:
         StsRawTPCPad();
-        ~StsRawTPCPad();
+        virtual ~StsRawTPCPad();
 
-        void Clear(Option_t* option = "");
+        virtual void Clear(Option_t* option = "");
         
         void SetChannel(UShort_t chan);
         void SetADC(int tb, int adc);

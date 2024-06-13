@@ -1,4 +1,5 @@
 #include "StsTPCDrum.hh"
+#include "TH2Poly.h"
 
 StsTPCDrum::StsTPCDrum()
 {
@@ -28,7 +29,6 @@ Int_t StsTPCDrum::Init()
 void StsTPCDrum::SetMainForm(){mTPCForm = kMainRun;}
 void StsTPCDrum::SetGemTestForm(){mTPCForm = kGemTestRun;}
 
-
 Int_t StsTPCDrum::GetAsAdNum(){return mAsAdNum;}
 Int_t StsTPCDrum::GetChannelNum(){return mChannelNum;}
 Int_t StsTPCDrum::GetPadNum(){return mPadNum;}
@@ -37,3 +37,9 @@ Int_t StsTPCDrum::GetRowNum(){return mRowNum;}
 // Double_t StsTPCDrum::GetPadHeight(int idx);
 // Double_t StsTPCDrum::GetPadWidth(int idx);
 // Double_t StsTPCDrum::GetPadGap(int idx);
+
+
+void StsTPCDrum::GetPolyGeometry(TH2Poly* poly)
+{
+
+}
