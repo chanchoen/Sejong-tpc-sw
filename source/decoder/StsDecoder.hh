@@ -13,7 +13,7 @@ class StsTrigger;
 class StsDecoder
 {
     public:
-        StsDecoder(TString filePath = "");
+        StsDecoder();
         ~StsDecoder();
 
         Int_t Init();
@@ -21,21 +21,27 @@ class StsDecoder
         Int_t Clear();
         Int_t Finish();
 
+        Int_t SetRunFile(int run, vector<TString> fileList);
+
+        Bool_t SkipEvent();
+
     private:
-        Int_t FileOpen();
-        Int_t ReadHeader();
-        Int_t ReadItem();
+        Int_t FileOpen(int asadIdx);
+        Int_t ReadHeader(int asadIdx);
+        Int_t ReadItem(int asadIdx);
         Int_t FillDst();
 
         Bool_t mEndOfEvents;
 
         StsDst* mDst = 0;
         StsTrigger* mTrigger = 0;
-        StsDAQFrame* mDAQFrame = 0;
 
-        TString mFilePath;
-        queue<tuple<int, int, TString>> mFileQueue;
-        std::ifstream mDAQFile;
+        int mAsAdNum;
+        StsDAQFrame* mDAQFrame[ASADNUM];
+
+        Int_t mRunNumber;
+        DAQList mDAQList;
+        std::ifstream mDAQFile[ASADNUM];
 
         HeaderFrame mHeader;
         ItemFrame mItem;

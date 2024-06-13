@@ -8,15 +8,22 @@
 #include <vector>
 #include <queue>
 
+#include "TROOT.h"
+#include "TSystem.h"
+#include "TSystemFile.h"
+#include "TSystemDirectory.h"
 #include "TString.h"
 #include "TMath.h"
 #include "TVector3.h"
+#include "TObjArray.h"
+#include "TObjString.h"
 
 using namespace std;
 
 static enum kStageFlag{
-    kRawStage = 0,
-    kRecoStage = 1
+    kDaqStage = 0,
+    kRawStage = 1,
+    kRecoStage = 2
 }kStageFlag;
 
 static enum kIoMode{
@@ -28,28 +35,43 @@ static enum kIoMode{
 #define TIMEBUCKET 512
 #define TRIGNUM 2
 #define EXPNUM 4
+#define ASADNUM 4
 
 static TString kTriggerType[TRIGNUM] = {"GEMTest", "MainRun"};
 static TString kExperimentType[EXPNUM] = {"HIMAC", "HIMACTPCGEMGain", "TPCDrumGEMTest", "TPCDrumMainRun"};
 
-typedef std::vector<std::pair<TString, Int_t>> RunList;
+static TString kDataBasePath = "/data/public_data/";
+typedef vector<pair<Int_t, vector<TString>>> RunList;
+typedef vector<queue<TString>> DAQList;
 
 class StsUtil
 {
     public:
+
+        // static enum mInputType{
+        //     mIsPath = 0,
+        //     mIsList = 1,
+        //     mIsFile = 2,
+        //     mIsExpName = 3
+        // };
+
         StsUtil();
         virtual ~StsUtil();
 
         static TString AddDash(TString path);
+        static RunList GetRunList(TString input, TString rejectRun, int stage);
+        static DAQList GetDAQList(vector<TString> fileList);
 
-        static RunList GetRunList(TString path, TString rejectRun);
+    protected:
+        static Bool_t CheckRunIDFormat(TString run);
+        static RunList RemovedRejectRun(RunList runList, vector<Int_t> rejectRun);
 
-        static vector<pair<TString, int>> GetRunPath(TString path);
+        static vector<Int_t> GetRunsFromString(TString run);
+        static RunList GetLines(TString file, int stage);
+        static vector<TString> GetDataBaseFile(TString run, int stage);
+        static vector<TString> GetDataBaseFile(int runID, int stage);
 
-        queue<tuple<int, int, TString>> GetDAQFileQueue(TString inputFile = "");
 
-    private:
-        static vector<Int_t> GetListFromString
 };
 
 #endif

@@ -20,7 +20,7 @@ Int_t StsDst::Init()
 {
     if(!mRunInfo){mRunInfo = new StsRunInfo();}
     if(!mEventInfo){mEventInfo = new StsEventInfo();}
-    if(!mRawTPCPadArray && mStageFlag == kRawStage){mRawTPCPadArray = new TClonesArray("StsRawTPCPad", mTrigger->GetTPCGeometry()->GetChannelNum());}
+    if(!mRawTPCPadArray && mStageFlag == kDaqStage){mRawTPCPadArray = new TClonesArray("StsRawTPCPad", mTrigger->GetTPCGeometry()->GetChannelNum());}
     if(!mRecoTPCPadArray && mStageFlag == kRecoStage){mRecoTPCPadArray = new TClonesArray("StsRecoTPCPad", mTrigger->GetTPCGeometry()->GetPadNum());}
 
     return 1;
@@ -31,7 +31,7 @@ Int_t StsDst::CreateDstArray(TTree* tree)
     if(mEventInfo){
         tree -> Branch("StsEventInfo", &mEventInfo);
     }
-    if(mRawTPCPadArray && mStageFlag == kRawStage){
+    if(mRawTPCPadArray && mStageFlag == kDaqStage){
         tree -> Branch("StsRawTPCPad", &mRawTPCPadArray);
     }
     if(mRecoTPCPadArray && mStageFlag == kRecoStage){
@@ -55,7 +55,7 @@ Int_t StsDst::LinkDstArray(TTree* tree)
 void StsDst::Clear(Option_t* option)
 {
     if(mEventInfo){mEventInfo -> Clear();}
-    if(mRawTPCPadArray && mStageFlag == kRawStage){mRawTPCPadArray -> Clear("C");}
+    if(mRawTPCPadArray && mStageFlag == kDaqStage){mRawTPCPadArray -> Clear("C");}
     if(mRecoTPCPadArray && mStageFlag == kRecoStage){mRecoTPCPadArray -> Clear("C");}
 }
 

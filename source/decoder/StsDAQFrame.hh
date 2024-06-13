@@ -73,6 +73,7 @@ class StsDAQFrame
         bool mIsHit[nAGET][72];  
         uint64_t mEventTime; // [10 ns]
         uint64_t mDiffTime; // [10 ns]
+        uint64_t mPrevTime; // [10 ns]
 
         uint16_t mADC[nAGET][nCHAN][nBUCK];
 };

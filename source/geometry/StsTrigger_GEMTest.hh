@@ -12,10 +12,14 @@ class StsTrigger_GEMTest : public StsTrigger
         virtual ~StsTrigger_GEMTest();
 
         virtual Int_t Init();
+        virtual Int_t GetCoBoNum();
+        virtual Int_t GetAsAdNum();
         virtual StsTPCDrum* GetTPCGeometry();
 
     private:
         StsTPCDrum* mTPC = 0;
+        Int_t mCoBoNum = 1;
+        Int_t mAsAdNum = 1;
 };
 
 #endif

@@ -4,8 +4,6 @@
 #include "StsMaker.hh"
 #include "StsUtil.hh"
 
-#include "TROOT.h"
-#include "TSystem.h"
 #include "TChain.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -22,7 +20,7 @@ class StsDecoder;
 using namespace std;
 using namespace TMath;
 
-class StsChainMaker : public StsMaker
+class StsChainMaker : public StsMaker, public StsUtil
 {
 	public: 
 		static StsChainMaker* GetChainMaker(int ioMode=kWrite, const char* file="");
@@ -57,14 +55,10 @@ class StsChainMaker : public StsMaker
 		Int_t InitWrite();
 		Int_t MakeWrite();
 
-		Int_t InitGeometry();
-
-		Int_t InitDst();
+		Int_t InitWriteDst(int runIdx);
+		Int_t FinishWriteDst(int runIdx);
 		Int_t FillDst();
-		Int_t DstList();
 		Int_t FillRunInfo();
-
-		Int_t InitChecker();
 
 		Int_t Print();
 

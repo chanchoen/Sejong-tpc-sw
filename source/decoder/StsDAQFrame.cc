@@ -29,4 +29,5 @@ void StsDAQFrame::Clear()
     memset(mIsHit, 0, sizeof(mIsHit));  
     memset(mADC, 0, sizeof(mADC));  
     mEventTime = 0;
+    mDiffTime = 0;
 }
