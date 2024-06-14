@@ -5,8 +5,11 @@
 #include "StsTrigger.hh"
 
 StsDecoder::StsDecoder() 
-: mEndOfEvents(false), mRunNumber(0), mAsAdNum(0)
+:mRunNumber(0), mAsAdNum(0)
 {
+    for(int i=0; i<ASADNUM; i++){
+        mDAQFrame[i] = nullptr;
+    }
 }
 
 StsDecoder::~StsDecoder()
@@ -14,7 +17,7 @@ StsDecoder::~StsDecoder()
     for(int i=0; i<mAsAdNum; i++){
         if(mDAQFrame[i]){
             delete mDAQFrame[i];
-            mDAQFrame[i] = 0;
+            mDAQFrame[i] = nullptr;
         }
     }
 }
@@ -24,8 +27,11 @@ Int_t StsDecoder::Init()
     mDst = StsChainMaker::GetChainMaker() -> GetDst();
     mTrigger = StsChainMaker::GetChainMaker() -> GetTrigger();
 
+
     mAsAdNum = mTrigger->GetAsAdNum();
+    // mAsAdNum = 4;
     for(int i=0; i<mAsAdNum; i++){
+        if(mDAQFile[i].is_open()){mDAQFile[i].close();}
         if(!mDAQFrame[i]){mDAQFrame[i] = new StsDAQFrame();}
 
         if(mDAQFrame[i]){
@@ -39,6 +45,11 @@ Int_t StsDecoder::Init()
 
 Int_t StsDecoder::Make()
 {
+    int eventNum[4];
+    uint64_t diffTime[4];
+    memset(eventNum, 0, sizeof(eventNum));
+    memset(diffTime, 0, sizeof(diffTime));
+
     for(int i=0; i<mAsAdNum; i++){
         if(!FileOpen(i)){return 0;}
 
@@ -47,10 +58,11 @@ Int_t StsDecoder::Make()
         ReadHeader(i);
         ReadItem(i);
 
-        cout << " test StsDecoder::Make() " << i << " " << mDAQFrame[i]->mEventID << " " << endl; 
-    }
-    if(!SkipEvent()){return 1;}
+        if(!CheckEvent(i)){return 0;}
 
+        eventNum[i] = mDAQFrame[i]->mEventID;
+        diffTime[i] = mDAQFrame[i]->mDiffTime;
+    }
 
     FillDst();
 
@@ -66,8 +78,10 @@ Int_t StsDecoder::SetRunFile(int run, vector<TString> fileList)
 {
     mRunNumber = run;
     mDAQList = StsUtil::GetDAQList(fileList);
-
+    return 1;
 }
+
+Int_t StsDecoder::GetEventNumber(){return mDAQFrame[0]->mEventID;}
 
 Int_t StsDecoder::FileOpen(int asadIdx)
 {
@@ -88,16 +102,27 @@ Int_t StsDecoder::FileOpen(int asadIdx)
         return 1;
     }
     if(mDAQList[asadIdx].empty() && mDAQFile[asadIdx].eof()){
-        cout << "StsDecoder::FileOpen() --- End of Run: " << mRunNumber << endl;
         mDAQFile[asadIdx].close();
         return 0;
     }
     if(!mDAQList[asadIdx].empty() && mDAQFile[asadIdx].eof()){
-        cout << "StsDecoder::FileOpen() --- End of File... Next to file" << endl;
         mDAQFile[asadIdx].close();
         FileOpen(asadIdx);
         return 1;
     }
+    return 1;
+}
+
+
+Int_t StsDecoder::CheckEvent(int asadIdx)
+{
+    if(mDAQFile[asadIdx].eof()){
+        if(!FileOpen(asadIdx)){return 0;}
+        mDAQFrame[asadIdx] -> Clear();
+        ReadHeader(asadIdx);
+        ReadItem(asadIdx);
+    }
+    
     return 1;
 }
 
@@ -217,15 +242,8 @@ Int_t StsDecoder::ReadItem(int asadIdx)
 
 Int_t StsDecoder::FillDst()
 {
-    
 
 
-    return 1;
-}
-
-Bool_t StsDecoder::SkipEvent()
-{
-    // if(mDAQFrame -> mDiffTime < 10){return 0;}
 
     return 1;
 }

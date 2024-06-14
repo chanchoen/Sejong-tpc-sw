@@ -38,13 +38,13 @@ class StsChainMaker : public StsMaker, public StsUtil
 		StsEventInfo* GetEventInfo();
 		StsTrigger* GetTrigger();
 
-		void SetExperiment(TString exp = "");
-		void SetTriggerType(TString type = "");
-		void SetExcuteRun(TString run = "ALL");
-		void SetRejectRun(TString run = "");
-		void SetEventNum(Int_t eventNum = -1);
-		void SetInputFile(TString inputFile = "");
-		void SetOutputPath(TString outPath = "");
+		void SetExperiment(TString exp);
+		void SetTriggerType(TString type);
+		void SetExcuteRun(TString run);
+		void SetRejectRun(TString run);
+		void SetEventNum(Int_t eventNum);
+		void SetInputFile(TString inputFile);
+		void SetOutputPath(TString outPath);
 
 	private:
 		Int_t InitRun();
@@ -56,11 +56,13 @@ class StsChainMaker : public StsMaker, public StsUtil
 		Int_t MakeWrite();
 
 		Int_t InitWriteDst(int runIdx);
-		Int_t FinishWriteDst(int runIdx);
+		Int_t FinishWriteDst();
 		Int_t FillDst();
 		Int_t FillRunInfo();
 
-		Int_t Print();
+		void Print();
+		void PrintRun(int run);
+		void PrintEvent(int event);
 
 		static StsChainMaker* mInstance;
 
@@ -78,7 +80,7 @@ class StsChainMaker : public StsMaker, public StsUtil
 
 		RunList mRunList;
 		Int_t mEventNum;
-		Int_t mEvent;
+		Int_t mCurrentEventID;
 
 		TFile* mTFile = 0;
 		TTree* mTree = 0;

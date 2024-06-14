@@ -22,16 +22,16 @@ class StsDecoder
         Int_t Finish();
 
         Int_t SetRunFile(int run, vector<TString> fileList);
-
-        Bool_t SkipEvent();
+        Int_t GetEventNumber();
 
     private:
         Int_t FileOpen(int asadIdx);
+        Int_t CheckEvent(int asadIdx);
+
         Int_t ReadHeader(int asadIdx);
         Int_t ReadItem(int asadIdx);
-        Int_t FillDst();
 
-        Bool_t mEndOfEvents;
+        Int_t FillDst();
 
         StsDst* mDst = 0;
         StsTrigger* mTrigger = 0;
