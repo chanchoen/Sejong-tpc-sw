@@ -21,7 +21,7 @@ StsChainMaker* StsChainMaker::GetChainMaker(int ioMode, const char* file){
 
 StsChainMaker::StsChainMaker(int ioMode, const char* file) 
 : StsMaker("StsChainMaker", "StsChainMaker"), mIoMode(ioMode), mStageFlag(-999), mExpName(""), mTrigType(""), mExcuteRun(""), mRejectRun(""),
-  mInputFile(file), mOutputPath(""), mOutputFile("StsDst"), mEventNum(-1), mEvent(0)
+  mInputFile(file), mOutputPath(""), mOutputFile("StsDst"), mEventNum(-1), mCurrentEventID(0)
 {
     mInstance = this;
     mRunList.clear();
@@ -34,23 +34,20 @@ StsChainMaker::~StsChainMaker()
 Int_t StsChainMaker::Init() 
 {  
     if(mIoMode==kRead){
-        cout << "StsChainMaker::Init() -- begin StsChainMaker construction for Read mode" << endl;
         if(!InitRead()){exit(0);}
     }
     else if(mIoMode==kWrite){
-        cout << "StsChainMaker::Init() -- begin StsChainMaker construction for Write mode" << endl;
         if(!InitWrite()){exit(0);}
     }
 
     InitMakers();
+    Print();
 
     return 1;
 }
 
 Int_t StsChainMaker::Make() 
 {
-    cout << "StsChainMaker::Make()" << endl;
-
     if(mIoMode==kRead){
         MakeRead();
     }
@@ -61,12 +58,15 @@ Int_t StsChainMaker::Make()
                 continue;
             }
 
+            PrintRun(run);
             InitWriteDst(run);
-
             MakeWrite();
+            FinishWriteDst();
 
-            FinishWriteDst(run);
+            cout << "StsChainMaker::Make() --- End of Run : " << mRunList[run].first << endl;
         }
+    }
+    else if(mIoMode==kOnline){
 
     }
 
@@ -112,11 +112,26 @@ Int_t StsChainMaker::InitRun()
         return 1;
     }
     else{
-        cout << "StsChainMaker::InitRun() --- Warnning!!! Make sure the run list setup" << endl;
+        cout << "StsChainMaker::InitRun() --- Warnning!!! Make sure the run setup" << endl;
         cout << "                             Your input parameters" << endl;
         cout << "                             Experiment: " << mExpName << endl;
         cout << "                             InputFile : " << mInputFile <<  endl;
         cout << "                             ExcuteRun : " <<  mExcuteRun << endl;
+
+        int tmpNum = 0;
+        vector<Int_t> Runs = GetRunsFromString(mExcuteRun);
+        if(Runs.size()==0){cout <<"                             ExcuteRun : "<<endl;}
+        for(int i=0; i<Runs.size(); i++){
+            if(i==0){cout <<"                             ExcuteRun : ";}
+            if(i!=Runs.size()-1){cout << Runs[i] << ", ";}
+            if(i==Runs.size()-1){cout << Runs[i] << endl;}
+
+            tmpNum++;
+            if(tmpNum==5 && i!=Runs.size()-1){
+                cout << endl;
+                cout << "                                         ";
+            } 
+        }
         return 0;
     }
 
@@ -146,28 +161,20 @@ Int_t StsChainMaker::InitWrite()
 
 Int_t StsChainMaker::MakeWrite()
 {
-    for(int i=0; i<10; i++){
-        mDecoder->Make(); // test 
+    while(mDecoder->Make()){
+        Clear();
+
+        PrintEvent(mDecoder->GetEventNumber());
+
+        TIter iter(GetListOfTasks());
+        StsMaker* maker;
+        while ( (maker = dynamic_cast<StsMaker*>(iter())) ) {
+            cout << "StsChainMaker::Make() --- " << maker -> GetName() << " is Running" << endl;
+            maker -> Make();
+        }
+
+        FillDst();
     }
-
-
-    // int testNum = 0;
-    // while(mDecoder->Make()){
-    //     if(!mDecoder->SkipEvent()){continue;}
-    //     Clear();
-
-    //     // testNum++;
-
-
-    //     // TIter iter(GetListOfTasks());
-    //     // StsMaker* maker;
-    //     // while ( (maker = dynamic_cast<StsMaker*>(iter())) ) {
-    //     //     cout << "StsChainMaker::Make() --- test " << maker -> GetName() << "." << endl;
-    //     //     maker -> Make();
-    //     // }
-
-    //     // FillDst();
-    // }
 
     return 1;
 }
@@ -184,20 +191,21 @@ Int_t StsChainMaker::InitWriteDst(int runIdx)
     mOutputFile = path+"StsDst_"+runID+"_raw"+".root";
 
     mTFile = new TFile(Form("%s", mOutputFile.Data()), "recreate");
+    if(!mTFile->IsOpen()){cout << "StsChainMaker::InitWriteDst --- Warnning!!! Make sure the ROOT File can not created :" << mOutputFile << endl;}
+    
     mTree = new TTree("StsDst", "StsDst");
-
     mDst -> CreateDstArray(mTree);
-
-    // Decoder initialization
 
     mDecoder -> SetRunFile(mRunList[runIdx].first, mRunList[runIdx].second);
     mDecoder -> Init();
+
+    return 1;
 }
 
-Int_t StsChainMaker::FinishWriteDst(int runIdx)
+Int_t StsChainMaker::FinishWriteDst()
 {
     if(mIoMode==kWrite){
-        cout << Form("StsChainMaker::Finish() --- Writing and closing Run: %i, %s", mRunList[runIdx].first,  mOutputFile.Data()) << endl;
+        cout << Form("StsChainMaker::Finish() --- Writing and closing file : %s", mOutputFile.Data()) << endl;
         mTFile -> cd();
         mTree -> Write();
         GetRunInfo() -> Write();
@@ -207,6 +215,91 @@ Int_t StsChainMaker::FinishWriteDst(int runIdx)
 
 Int_t StsChainMaker::FillDst()
 {
-    mTree -> Fill();
-    return 1;
+    if(mTree -> Fill()){return 1;}
+    return 0;
+}
+
+void StsChainMaker::Print()
+{
+    TString ioMode = (mIoMode==kRead)? "READ mode" : ((mIoMode==kWrite)? "WRITE mode": "ONLINE mode");
+    TString stageName = (mStageFlag==kDaqStage)? "DAQ stage" : ((mStageFlag==kRawStage)? "RAW stage": "RECO stage");
+
+    TString totalEventNum = (mEventNum==-1)? "ALL" : TString::Itoa(mEventNum, 10);
+    TString outputPath = (mOutputPath=="")? AddDash(gSystem->pwd()) : mOutputPath;
+
+
+    cout << "=================================================================================" << endl;
+    cout << "                                     StsChainMaker                               "<< endl;
+    cout << "   --- Setup Parameter List ---                                                  "<< endl;
+    cout << "   IoMode             : " << ioMode <<  endl;
+    cout << "   Stage              : " << stageName << endl;
+    cout << "   Experiment Type    : " << mExpName << endl;
+    cout << "   Trigger Type       : " << mTrigType << endl;
+    cout << "   Input File         : " << mInputFile << endl;
+
+    int tmpNum = 0;
+    vector<Int_t> Runs = GetRunsFromString(mExcuteRun);
+    if(Runs.size()==0){cout <<"   Excute Run List    : "<<endl;}
+    for(int i=0; i<Runs.size(); i++){
+        if(i==0){cout <<"   Excute Run List    : ";}
+        if(i!=Runs.size()-1){cout << Runs[i] << ", ";}
+        if(i==Runs.size()-1){cout << Runs[i] << endl;}
+
+        tmpNum++;
+        if(tmpNum==5 && i!=Runs.size()-1){
+            cout << endl;
+            cout << "                        ";
+        } 
+    }
+
+    tmpNum = 0;
+    Runs = GetRunsFromString(mRejectRun);
+    if(Runs.size()==0){cout <<"   Reject Run List    : "<<endl;}
+    for(int i=0; i<Runs.size(); i++){
+        if(i==0){cout <<"   Reject Run List    : ";}
+        if(i!=Runs.size()-1){cout << Runs[i] << ", ";}
+        if(i==Runs.size()-1){cout << Runs[i] << endl;}
+
+        tmpNum++;
+        if(tmpNum==5 && i!=Runs.size()-1){
+            cout << endl;
+            cout << "                        ";
+        } 
+    }
+
+    cout << "   Total Event Number : " << totalEventNum << endl;
+    cout << "   Output Path        : " << outputPath << endl;
+
+    cout << endl;
+    cout << "   --- Running Run Number List ---                                                "<< endl;
+
+    tmpNum = 0;
+    for(int i=0; i<mRunList.size(); i++){
+        if(i==0){cout <<"   ";}
+
+        if(i!=mRunList.size()-1){cout << mRunList[i].first << ", ";}
+        if(i==mRunList.size()-1){cout << mRunList[i].first << endl;}
+        tmpNum++;
+
+        if(tmpNum==5 && i!=mRunList.size()-1){
+            cout << endl;
+            cout << "   ";
+        } 
+    }
+
+    cout << endl;
+    cout << "==================================================================================" << endl;
+}
+
+void StsChainMaker::PrintRun(int run)
+{
+    cout << "=================================================" << endl;
+    cout << "|  Run Number      : " << mRunList[run].first << "                  |"<< endl;
+    cout << "|  Number of Files : " << mRunList[run].second.size() << "                          |"<< endl;
+    cout << "=================================================" << endl;
+}
+
+void StsChainMaker::PrintEvent(int event)
+{
+    cout << "=== StsChainMaker::Make() --- Event: " << event << endl; 
 }

@@ -61,12 +61,11 @@ class StsUtil
         static TString AddDash(TString path);
         static RunList GetRunList(TString input, TString rejectRun, int stage);
         static DAQList GetDAQList(vector<TString> fileList);
+        static vector<Int_t> GetRunsFromString(TString run);
 
     protected:
         static Bool_t CheckRunIDFormat(TString run);
-        static RunList RemovedRejectRun(RunList runList, vector<Int_t> rejectRun);
-
-        static vector<Int_t> GetRunsFromString(TString run);
+        static RunList RemovedRejectRun(RunList runList, vector<Int_t> rejectRun);        
         static RunList GetLines(TString file, int stage);
         static vector<TString> GetDataBaseFile(TString run, int stage);
         static vector<TString> GetDataBaseFile(int runID, int stage);

@@ -100,9 +100,6 @@ DAQList StsUtil::GetDAQList(vector<TString> fileList)
 
         queue<TString> tmpQueue;
         for(int i=0; i<tmp2AsAdFile[asad].size(); i++){
-
-            cout << " test! " << asad <<  " " << i << " " << tmp2AsAdFile[asad][i] << endl;
-
             tmpQueue.push(tmp2AsAdFile[asad][i]);
         }
         daqList.push_back(tmpQueue);
@@ -169,6 +166,7 @@ RunList StsUtil::GetLines(TString file, int stage)
         string line;
         while(getline(inputFile, line)){
             TString lineTmp = line;
+            lineTmp.ReplaceAll(" ", "");
 
             if(stage == kDaqStage){ // getting .graw file in line
                 if(lineTmp.Index(".graw") != -1){
