@@ -16,7 +16,7 @@ class StsRawTPCPad : public TObject
         
         void SetChannel(UShort_t chan);
         void SetADC(int tb, int adc);
-        void SetADC(UShort_t* adc);
+        void SetADC(uint16_t* adc);
 
         UShort_t GetChannel();
         UShort_t GetADC(int tb);

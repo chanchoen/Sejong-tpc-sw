@@ -34,7 +34,7 @@ class StsTPCDrum
 
         void GetPolyGeometry(TH2Poly* poly);
 
-    protected:
+    private:
         void InitMapping_ZAPtoGEMTest();
         void InitMapping_HyperZAPtoGEMTest();
         void InitMapping_HyperZAPtoMainRun();

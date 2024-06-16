@@ -3,6 +3,7 @@
 
 #include "StsTrigger.hh"
 
+
 using namespace std;
 
 class StsTrigger_GEMTest : public StsTrigger
@@ -15,6 +16,7 @@ class StsTrigger_GEMTest : public StsTrigger
         virtual Int_t GetCoBoNum();
         virtual Int_t GetAsAdNum();
         virtual StsTPCDrum* GetTPCGeometry();
+        virtual Int_t FillData(StsDst* dst, StsDAQFrame* frame);
 
     private:
         StsTPCDrum* mTPC = 0;

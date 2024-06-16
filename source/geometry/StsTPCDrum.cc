@@ -43,3 +43,19 @@ void StsTPCDrum::GetPolyGeometry(TH2Poly* poly)
 {
 
 }
+
+void StsTPCDrum::InitMapping_ZAPtoGEMTest()
+{
+
+}
+
+void StsTPCDrum::InitMapping_HyperZAPtoGEMTest()
+{
+
+}
+
+void StsTPCDrum::InitMapping_HyperZAPtoMainRun()
+{
+    
+}
+
