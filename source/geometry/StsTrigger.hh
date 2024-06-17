@@ -19,7 +19,7 @@ class StsTrigger
         virtual Int_t GetCoBoNum();
         virtual Int_t GetAsAdNum();
         virtual StsTPCDrum* GetTPCGeometry();
-        virtual Int_t FillData(StsDst* dst, StsDAQFrame* frame);
+        virtual Int_t FillData(StsDst* dst, StsDAQFrame* frame); 
 };
 
 #endif
