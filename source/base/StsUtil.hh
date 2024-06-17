@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 #include <queue>
+#include <map>
 
 #include "TROOT.h"
 #include "TSystem.h"
@@ -32,6 +33,8 @@ static enum kIoMode{
     kOnline = 2
 }kIoMode;
 
+#define AGETNUM 4
+#define CHANNUM 68  
 #define TIMEBUCKET 512
 #define TRIGNUM 2
 #define EXPNUM 4
@@ -62,6 +65,8 @@ class StsUtil
         static RunList GetRunList(TString input, TString rejectRun, int stage);
         static DAQList GetDAQList(vector<TString> fileList);
         static vector<Int_t> GetRunsFromString(TString run);
+
+        static Bool_t IsFPNChannel(int chan);
 
     protected:
         static Bool_t CheckRunIDFormat(TString run);

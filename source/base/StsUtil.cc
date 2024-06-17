@@ -156,6 +156,12 @@ vector<Int_t> StsUtil::GetRunsFromString(TString run)
     return list;
 }
 
+Bool_t StsUtil::IsFPNChannel(int chan)
+{
+    if(chan==11 || chan==22 || chan==45 || chan==56){return true;}
+    return false;
+}
+
 RunList StsUtil::GetLines(TString file, int stage)
 {
     RunList lineList;

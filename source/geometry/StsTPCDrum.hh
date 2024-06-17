@@ -28,16 +28,19 @@ class StsTPCDrum
         Int_t GetPadNum();
         Int_t GetLayerNum();
         Int_t GetRowNum();
+
+        Int_t GetLayerID(int aget, int chan);
+        Int_t GetRowID(int aget, int chan);
+
         Double_t GetPadHeight(int idx);
         Double_t GetPadWidth(int idx);
         Double_t GetPadGap(int idx);
 
         void GetPolyGeometry(TH2Poly* poly);
 
-    protected:
+    private:
         void InitMapping_ZAPtoGEMTest();
-        void InitMapping_HyperZAPtoGEMTest();
-        void InitMapping_HyperZAPtoMainRun();
+        void InitMapping_ZAPtoMainRun();
 
         Bool_t mTPCForm;
 
@@ -50,6 +53,8 @@ class StsTPCDrum
         Double_t mPadWidth;
         Double_t mPadWidth2;
         Double_t mPadGap;
+
+        map<pair<int, int>, pair<int, int>> mMapChanGEMTest; // channel, (layer, row)
 };
 
 #endif

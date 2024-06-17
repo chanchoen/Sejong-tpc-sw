@@ -161,9 +161,11 @@ Int_t StsChainMaker::InitWrite()
 
 Int_t StsChainMaker::MakeWrite()
 {
-    while(mDecoder->Make()){
-        Clear();
+    Clear();
 
+    int tmpEventNum = 0;
+    while(mDecoder->Make()){
+        if(tmpEventNum == mEventNum){break;}
         PrintEvent(mDecoder->GetEventNumber());
 
         TIter iter(GetListOfTasks());
@@ -174,6 +176,9 @@ Int_t StsChainMaker::MakeWrite()
         }
 
         FillDst();
+        Clear();
+        
+        tmpEventNum++;
     }
 
     return 1;

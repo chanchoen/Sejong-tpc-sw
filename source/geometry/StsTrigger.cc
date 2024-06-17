@@ -21,3 +21,8 @@ StsTPCDrum* StsTrigger::GetTPCGeometry()
     StsTPCDrum* tpcDrum = new StsTPCDrum();
     return tpcDrum;
 }
+
+Int_t StsTrigger::FillData(StsDst* dst, StsDAQFrame* frame)
+{
+    return 1;
+}

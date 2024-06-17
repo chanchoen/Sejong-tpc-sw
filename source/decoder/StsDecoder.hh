@@ -37,7 +37,7 @@ class StsDecoder
         StsTrigger* mTrigger = 0;
 
         int mAsAdNum;
-        StsDAQFrame* mDAQFrame[ASADNUM];
+        StsDAQFrame* mDAQFrame;
 
         Int_t mRunNumber;
         DAQList mDAQList;
