@@ -21,7 +21,7 @@ StsChainMaker* StsChainMaker::GetChainMaker(int ioMode, const char* file){
 
 StsChainMaker::StsChainMaker(int ioMode, const char* file) 
 : StsMaker("StsChainMaker", "StsChainMaker"), mIoMode(ioMode), mStageFlag(-999), mExpName(""), mTrigType(""), mExcuteRun(""), mRejectRun(""),
-  mInputFile(file), mOutputPath(""), mOutputFile("StsDst"), mEventNum(-1), mCurrentEventID(0)
+  mInputFile(file), mOutputPath(""), mOutputFile("StsDst"), mEventNum(-1), mCurrentEventID(-1)
 {
     mInstance = this;
     mRunList.clear();
@@ -38,6 +38,9 @@ Int_t StsChainMaker::Init()
     }
     else if(mIoMode==kWrite){
         if(!InitWrite()){exit(0);}
+    }
+    else if(mIoMode==kOnline){
+        if(!InitOnline()){exit(0);}
     }
 
     InitMakers();
@@ -66,15 +69,33 @@ Int_t StsChainMaker::Make()
             cout << "StsChainMaker::Make() --- End of Run : " << mRunList[run].first << endl;
         }
     }
-    else if(mIoMode==kOnline){
 
+    return 1;
+}
+
+Int_t StsChainMaker::Make(int event)
+{
+    mEventNum = event;
+    if(mIoMode==kRead){
+        MakeRead();
     }
-
+    else if(mIoMode==kOnline){
+        MakeOnline();
+    }
     return 1;
 }
 
 Int_t StsChainMaker::Finish() 
 {
+
+    // test !!! 
+    TIter iter(GetListOfTasks());
+    StsMaker* maker;
+    while ( (maker = dynamic_cast<StsMaker*>(iter())) ) {
+        cout << "StsChainMaker::Finish() --- " << maker -> GetName() << " is Finished" << endl;
+        maker -> Finish();
+    }
+
     return 1;
 }
 
@@ -181,6 +202,70 @@ Int_t StsChainMaker::MakeWrite()
         tmpEventNum++;
     }
 
+    return 1;
+}
+
+Int_t StsChainMaker::InitOnline()
+{    
+    if(mInputFile == ""){
+        cout << "StsChainMaker::InitOnline() --- Warning!!! There is no DAQ input path" << endl;
+        return 0;
+    }
+
+    mStageFlag = kDaqStage;
+    mTrigManager = new StsTriggerManager(mTrigType);
+    mDst = new StsDst(mIoMode);
+    mDst -> SetStageFlag(mStageFlag);
+    mDst -> SetTrigger(GetTrigger());
+    mDst -> Init();
+
+    mDecoder = new StsDecoder();
+    mDecoder -> Init();
+    mDecoder -> SetOnlineFile(mInputFile);
+
+    return 1;
+}
+
+Int_t StsChainMaker::MakeOnline()
+{
+    cout << "  StsChainMaker::MakeOnline() current event: " << mCurrentEventID << endl;
+
+    if(mEventNum != 0 && mCurrentEventID == -1){
+        while(mCurrentEventID != mEventNum){
+            if(!mDecoder->Make()){
+                mDecoder -> SetOnlineFile(mInputFile);
+                cout << "not mKae" << endl;
+            }
+            mCurrentEventID = mDecoder -> GetEventNumber();
+            cout << " start " << " " << mCurrentEventID << endl;
+        }
+
+        TIter iter(GetListOfTasks());
+        StsMaker* maker;
+        while ( (maker = dynamic_cast<StsMaker*>(iter())) ) {
+            cout << "StsChainMaker::Make() --- " << maker -> GetName() << " is Running" << endl;
+            maker -> Make();
+        }
+
+        return 1;
+    }
+
+    cout << " decoder make " << endl;
+    if(!mDecoder->Make()){
+        mDecoder -> SetOnlineFile(mInputFile);
+        MakeOnline();
+    }
+
+    cout << "decoder good " << endl;
+    mCurrentEventID = mDecoder -> GetEventNumber();
+
+    TIter iter(GetListOfTasks());
+    StsMaker* maker;
+    while ( (maker = dynamic_cast<StsMaker*>(iter())) ) {
+        cout << "StsChainMaker::Make() --- " << maker -> GetName() << " is Running" << endl;
+        maker -> Make();
+    }
+    
     return 1;
 }
 
@@ -291,6 +376,14 @@ void StsChainMaker::Print()
             cout << "   ";
         } 
     }
+    
+    cout << endl;
+    cout << "   --- Added Maker List ---                                                "<< endl;
+    TIter iter(GetListOfTasks());
+    StsMaker* maker;
+    while ( (maker = dynamic_cast<StsMaker*>(iter())) ) {
+        cout << "   " << maker -> GetName() << endl;
+    }
 
     cout << endl;
     cout << "==================================================================================" << endl;
@@ -299,8 +392,8 @@ void StsChainMaker::Print()
 void StsChainMaker::PrintRun(int run)
 {
     cout << "=================================================" << endl;
-    cout << "|  Run Number      : " << mRunList[run].first << "                  |"<< endl;
-    cout << "|  Number of Files : " << mRunList[run].second.size() << "                          |"<< endl;
+    cout << "  Run Number      : " << mRunList[run].first << endl;
+    cout << "  Number of Files : " << mRunList[run].second.size() << endl;
     cout << "=================================================" << endl;
 }
 

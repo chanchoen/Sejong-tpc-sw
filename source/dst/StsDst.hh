@@ -6,12 +6,14 @@
 #include "TClonesArray.h"
 
 #include "StsUtil.hh"
+#include "StsRunInfo.hh"
+#include "StsEventInfo.hh"
+#include "StsRawTPCPad.hh"
+#include "StsRecoTPCPad.hh"
 
 class StsTrigger;
 class StsRunInfo;
-class StsEventInfo;
-class StsRawTPCPad;
-class StsRecoTPCPad;
+
 
 using namespace std;
 

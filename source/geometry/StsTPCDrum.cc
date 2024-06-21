@@ -19,10 +19,10 @@ Int_t StsTPCDrum::Init()
         mPadNum = 256;
         mLayerNum = 16;
         mRowNum = 16;
-        mPadHeight = 0.;
-        mPadWidth = 0.;
-        mPadWidth2 = 0.;
-        mPadGap = 0.;
+        mPadHeight = 12.0; // [mm]
+        mPadWidth = 12.0; // [mm]
+        mPadWidth2 = 0.; // [mm]
+        mPadGap = 0.5; // [mm]
     }
 
     return 1;
@@ -36,20 +36,100 @@ Int_t StsTPCDrum::GetChannelNum(){return mChannelNum;}
 Int_t StsTPCDrum::GetPadNum(){return mPadNum;}
 Int_t StsTPCDrum::GetLayerNum(){return mLayerNum;}
 Int_t StsTPCDrum::GetRowNum(){return mRowNum;}
-// Double_t StsTPCDrum::GetPadHeight(int idx);
-// Double_t StsTPCDrum::GetPadWidth(int idx);
-// Double_t StsTPCDrum::GetPadGap(int idx);
 
-
-void StsTPCDrum::GetPolyGeometry(TH2Poly* poly)
+Int_t StsTPCDrum::GetLayerID(int padID)
 {
+    if(mPadMap_padID.find(padID) == mPadMap_padID.end()){return -1;}
+    return mPadMap_padID[padID].first;
+}
 
+Int_t StsTPCDrum::GetLayerID(int aget, int chan)
+{
+    if(mPadMap.find(make_pair(aget, chan)) == mPadMap.end()){return -1;}
+    return mPadMap[make_pair(aget, chan)].first;
+}
+
+Int_t StsTPCDrum::GetRowID(int padID)
+{
+    if(mPadMap_padID.find(padID) == mPadMap_padID.end()){return -1;}
+    return mPadMap_padID[padID].second;
+}
+
+Int_t StsTPCDrum::GetRowID(int aget, int chan)
+{
+    if(mPadMap.find(make_pair(aget, chan)) == mPadMap.end()){return -1;}
+    return mPadMap[make_pair(aget, chan)].second;
+}
+
+
+Double_t StsTPCDrum::GetX(int padID)
+{
+    double row = double(GetRowID(padID));
+    return row * (GetPadWidth(padID)+GetPadGap());
+}
+
+// Double_t StsTPCDrum::GetX(int layer, int chan)
+// {
+//     double row = double(GetRowID(aget, chan));
+//     return row * (GetPadWidth(aget, chan)+GetPadGap(padID));
+// }
+
+Double_t StsTPCDrum::GetY(int padID)
+{
+    double layer = double(GetLayerID(padID));
+    return layer * (GetPadHeight(padID)+GetPadGap());
+}
+
+// Double_t StsTPCDrum::GetY(int layer, int row);
+
+Double_t StsTPCDrum::GetPadHeight(int padID){return mPadHeight;}
+Double_t StsTPCDrum::GetPadWidth(int padID){return mPadWidth;}
+Double_t StsTPCDrum::GetPadGap(){return mPadGap;}
+
+
+TH2Poly* StsTPCDrum::GetPolyGeometry()
+{
+    TH2Poly* polyGeo = new TH2Poly();
+
+    double boundaryX[5];
+    double boundaryY[5];
+    for(int pad=0; pad<mPadNum; pad++){
+        double centerX = GetX(pad);
+        double centerY = GetY(pad);
+
+        for(int i=0; i<5; i++){
+            double xSign = (i<2 || i==4)? -1. : +1.;
+            double ySign = (i==1 || i==2)? -1. : +1.;
+            boundaryX[i] = centerX + xSign*GetPadWidth(pad)/2.;
+            boundaryY[i] = centerY + ySign*GetPadHeight(pad)/2.;
+        }
+
+        polyGeo -> AddBin(5, boundaryX, boundaryY);
+    }
+
+    polyGeo -> GetZaxis()->SetRangeUser(0., 4095.);
+
+    double padHeight = GetPadHeight(0); 
+    double padWidth = GetPadWidth(0); 
+    double padGap = GetPadGap();
+
+    double boundaXLeft = 200./2. - ((double(GetRowNum())/2. - 1./2.)*padWidth + (double(GetRowNum()/2-1) + 1./2.)*padGap);
+    double boundaXRight = 200./2. + ((double(GetRowNum())/2.- 1./2.)*padWidth + (double(GetRowNum()/2-1) + 1./2.)* padGap);
+
+    double boundaYDown = 200./2. - ((double(GetLayerNum())/2.- 1./2.)*padHeight + (double(GetLayerNum()/2-1) + 1./2.)*padGap);
+    double boundaYUp = 200./2. + ((double(GetLayerNum())/2.- 1./2.)*padHeight + (double(GetLayerNum()/2-1) + 1./2.)*padGap);
+
+    polyGeo -> GetXaxis()->SetRangeUser(-1.*boundaXLeft, boundaXRight);
+    polyGeo -> GetYaxis()->SetRangeUser(-1.*boundaYDown, boundaYUp);
+
+    return polyGeo;
 }
 
 void StsTPCDrum::InitMapping_ZAPtoGEMTest()
 {
     int layerID = 0;
     int rowID = 0;
+    int padID = 0;
     for(int aget=0; aget<AGETNUM; aget++){
         int tmpLayer = aget*4 + 3;
         int tmpRowEven = 8;
@@ -71,54 +151,10 @@ void StsTPCDrum::InitMapping_ZAPtoGEMTest()
                 rowID = tmpRowOdd;
             }
 
-            mMapChanGEMTest.insert({make_pair(aget, chanIdx), make_pair(layerID, rowID)});
+            mPadMap.insert({make_pair(aget, chanIdx), make_pair(layerID, rowID)});
+            mPadMap_padID.insert({padID,  make_pair(layerID, rowID)});
             chanIdx++;
+            padID++;
         }
     }
 }
-
-void StsTPCDrum::InitMapping_ZAPtoMainRun()
-{
-    // int xId = 0;
-    // int yId = 0;
-
-    // for (int agetId = 0; agetId < 4; agetId++) {
-    //     xId = 16;
-    //     yId = 6 - (2 * agetId);
-
-    //     int nChanId = 0;
-    //     int padSorterIdx = 0;
-    //     for (int chanId = 0; chanId < 68; chanId++) {
-    //         if (chanId == 11 || chanId == 22 || chanId == 45 || chanId == 56) continue;
-    //         nChanId++;
-    //         int idxFPN = (nChanId - 1) / 16;
-    //         if (chanId == 33 || chanId == 34 || chanId == 35) {
-    //             xId = 0;
-    //             if (chanId == 34) {
-    //                 xId = 1;
-    //                 yId++;
-    //                 padSorterIdx = 14;
-    //             }
-    //             this->agetId_[xId][yId] = agetId;
-    //             this->chanId_[xId][yId] = chanId;
-    //             this->xId_[agetId][chanId] = xId;
-    //             this->yId_[agetId][chanId] = yId;
-    //             continue;
-    //         }
-
-    //         int sign = -1;
-    //         if (nChanId % 2 == 0) {
-    //             sign = 1;
-    //             padSorterIdx++;
-    //         } else if (chanId >= 38) {
-    //             padSorterIdx -= 2;
-    //         }
-    //         xId = 16 + sign * (padSorterIdx);
-    //         this->agetId_[xId][yId] = agetId;
-    //         this->chanId_[xId][yId] = chanId;
-    //         this->xId_[agetId][chanId] = xId;
-    //         this->yId_[agetId][chanId] = yId;
-    //     }
-    // }    
-}
-

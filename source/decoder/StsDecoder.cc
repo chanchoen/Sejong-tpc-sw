@@ -72,12 +72,25 @@ Int_t StsDecoder::SetRunFile(int run, vector<TString> fileList)
     return 1;
 }
 
+Int_t StsDecoder::SetOnlineFile(TString path)
+{
+    mRunNumber = -1;
+    vector<TString> filePath = StsUtil::GetDAQFiles(path);
+    mDAQList = StsUtil::GetDAQList(filePath);
+
+    return 1;
+}
+
 Int_t StsDecoder::GetEventNumber(){return mDAQFrame[0].mEventID;}
 
 Int_t StsDecoder::FileOpen(int asadIdx)
 {
+    cout << "test StsDecoder::FileOpen() " << endl;
+
     if(!mDAQList[asadIdx].empty() && !mDAQFile[asadIdx].is_open()){
         mDAQFile[asadIdx].open(mDAQList[asadIdx].front().Data(), std::ios::binary);
+
+        cout << "test not open " << mDAQList[asadIdx].front().Data() << endl;
 
         if(!mDAQFile[asadIdx].is_open()){
             cout << "StsDecoder::FileOpen() --- Error: " << mDAQList[asadIdx].front().Data() << " can not open !!!" << endl;
@@ -93,10 +106,12 @@ Int_t StsDecoder::FileOpen(int asadIdx)
         return 1;
     }
     if(mDAQList[asadIdx].empty() && mDAQFile[asadIdx].eof()){
+        cout << "test empty, eof " << endl;
         mDAQFile[asadIdx].close();
         return 0;
     }
     if(!mDAQList[asadIdx].empty() && mDAQFile[asadIdx].eof()){
+        cout << "test not empty, eof " << endl;
         mDAQFile[asadIdx].close();
         FileOpen(asadIdx);
         return 1;

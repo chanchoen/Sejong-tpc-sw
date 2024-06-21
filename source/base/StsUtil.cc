@@ -90,7 +90,6 @@ DAQList StsUtil::GetDAQList(vector<TString> fileList)
                     daqNumStr += tmpAsAdFile[asad][i][numberIdx+idx];
                 }
                 int daqNum = daqNumStr.Atoi();
-
                 if(findDAQNum == daqNum){
                     tmp2AsAdFile[asad].push_back(tmpAsAdFile[asad][i]);
                     findDAQNum++;
@@ -101,11 +100,36 @@ DAQList StsUtil::GetDAQList(vector<TString> fileList)
         queue<TString> tmpQueue;
         for(int i=0; i<tmp2AsAdFile[asad].size(); i++){
             tmpQueue.push(tmp2AsAdFile[asad][i]);
+
+            cout << "test"  << asad << " " << i << " " << tmp2AsAdFile[asad][i] << endl;
         }
         daqList.push_back(tmpQueue);
     }
 
     return daqList;
+}
+
+vector<TString> StsUtil::GetDAQFiles(TString path)
+{
+    vector<TString> filePathList;
+    TSystemDirectory dir("dir", path);
+
+    TList *listOfFiles = dir.GetListOfFiles();
+    
+    TIter nextFiles(listOfFiles);
+    TObject *objFile;
+    while((objFile = nextFiles())){
+        TSystemFile* runFile = dynamic_cast<TSystemFile*>(objFile);
+        TString fileName = runFile->GetName();
+        if(!runFile){continue;}
+
+        TString filePath = path+"/"+fileName;
+        if(fileName.Index(".graw") != -1){
+            filePathList.push_back(filePath);
+        }
+    }
+
+    return filePathList;   
 }
 
 Bool_t StsUtil::CheckRunIDFormat(TString run)
@@ -162,6 +186,15 @@ Bool_t StsUtil::IsFPNChannel(int chan)
     return false;
 }
 
+Int_t StsUtil::GetFPNChannelID(int chan)
+{
+    if(0 <= chan && chan < 17) {return 11;} 
+    else if(chan < 34){return 22;} 
+    else if(chan < 51){return 45;} 
+    else if(chan < 68){return 56;}
+    return -1;
+}
+
 RunList StsUtil::GetLines(TString file, int stage)
 {
     RunList lineList;
@@ -210,8 +243,6 @@ RunList StsUtil::GetLines(TString file, int stage)
 vector<TString> StsUtil::GetDataBaseFile(TString run, int stage)
 {
     vector<TString> runPathList;
-
-    TString currentPath = gSystem->pwd();
 
     TString dataBase;
     if(stage == kDaqStage){dataBase = kDataBasePath+"daq";}

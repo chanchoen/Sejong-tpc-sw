@@ -1,9 +1,5 @@
 #include "StsDst.hh"
 #include "StsTrigger.hh"
-#include "StsRunInfo.hh"
-#include "StsEventInfo.hh"
-#include "StsRawTPCPad.hh"
-#include "StsRecoTPCPad.hh"
 
 ClassImp(StsDst)
 
