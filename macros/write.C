@@ -9,21 +9,11 @@ void write()
     chain -> SetTriggerType("GemTest");
     chain -> SetEventNum(10);
 
-    time_t start, end;
-    double result;
-
     StsTPCPadDrawMaker* drawMaker = new StsTPCPadDrawMaker();
     chain -> Add(drawMaker);
     chain -> Init();
 
-    start = time(NULL);
-
     chain -> Make();
-
-    end = time(NULL);
-    result = (double)(end-start);
-    cout << " running time : " << result << " s " << endl;
-
     chain -> Finish();
 
 }
