@@ -64,9 +64,11 @@ class StsUtil
         static TString AddDash(TString path);
         static RunList GetRunList(TString input, TString rejectRun, int stage);
         static DAQList GetDAQList(vector<TString> fileList);
+        static vector<TString> GetDAQFiles(TString path); // For only online mode
         static vector<Int_t> GetRunsFromString(TString run);
 
-        static Bool_t IsFPNChannel(int chan);
+        static Bool_t IsFPNChannel(int chan); // FPN Channel or not
+        static Int_t GetFPNChannelID(int chan); // Getting FPN channel ID related pad channelID
 
     protected:
         static Bool_t CheckRunIDFormat(TString run);

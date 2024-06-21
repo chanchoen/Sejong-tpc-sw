@@ -22,6 +22,7 @@ class StsDecoder
         Int_t Finish();
 
         Int_t SetRunFile(int run, vector<TString> fileList);
+        Int_t SetOnlineFile(TString path);
         Int_t GetEventNumber();
 
     private:

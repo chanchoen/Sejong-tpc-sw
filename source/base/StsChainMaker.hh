@@ -30,6 +30,7 @@ class StsChainMaker : public StsMaker, public StsUtil
 
 		Int_t Init();
 		Int_t Make();
+		Int_t Make(int event);
 		Int_t Finish();
 		Int_t Clear();
 		
@@ -54,6 +55,9 @@ class StsChainMaker : public StsMaker, public StsUtil
 		
 		Int_t InitWrite();
 		Int_t MakeWrite();
+		
+		Int_t InitOnline();
+		Int_t MakeOnline();
 
 		Int_t InitWriteDst(int runIdx);
 		Int_t FinishWriteDst();

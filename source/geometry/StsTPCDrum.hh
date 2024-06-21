@@ -29,14 +29,21 @@ class StsTPCDrum
         Int_t GetLayerNum();
         Int_t GetRowNum();
 
+        Int_t GetLayerID(int padID);
         Int_t GetLayerID(int aget, int chan);
+        Int_t GetRowID(int padID);
         Int_t GetRowID(int aget, int chan);
 
-        Double_t GetPadHeight(int idx);
-        Double_t GetPadWidth(int idx);
-        Double_t GetPadGap(int idx);
+        Double_t GetX(int padID);
+        // Double_t GetX(int aget, int chan);
+        Double_t GetY(int padID);
+        // Double_t GetY(int aget, int chan);
 
-        void GetPolyGeometry(TH2Poly* poly);
+        Double_t GetPadHeight(int padID);
+        Double_t GetPadWidth(int padID);
+        Double_t GetPadGap();
+
+        TH2Poly* GetPolyGeometry();
 
     private:
         void InitMapping_ZAPtoGEMTest();
@@ -54,7 +61,8 @@ class StsTPCDrum
         Double_t mPadWidth2;
         Double_t mPadGap;
 
-        map<pair<int, int>, pair<int, int>> mMapChanGEMTest; // channel, (layer, row)
+        map<pair<int, int>, pair<int, int>> mPadMap; // (aget, chan<68), (layer, row)
+        map<int, pair<int, int>> mPadMap_padID; // (padID<256), (layer, row)
 };
 
 #endif

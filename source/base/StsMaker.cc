@@ -6,7 +6,7 @@ StsMaker::StsMaker()
 }
 
 StsMaker::StsMaker(const char* name, const char *title)
-:TTask("StsMaker", "StsMaker")
+:TTask(name, title)
 {
 }
 

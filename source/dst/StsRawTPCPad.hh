@@ -14,12 +14,15 @@ class StsRawTPCPad : public TObject
 
         virtual void Clear(Option_t* option = "");
         
-        void SetAGet(UShort_t aget);
-        void SetChannel(UShort_t chan);
+        void SetAgetID(UShort_t aget);
+        void SetChannelID(UShort_t chan);
+        void SetPadID(UShort_t pad);
         void SetADC(int tb, int adc);
         void SetADC(uint16_t* adc);
 
-        UShort_t GetChannel();
+        UShort_t GetAgetID();
+        UShort_t GetChannelID();
+        UShort_t GetPadID();
         UShort_t GetADC(int tb);
         UShort_t* GetADC();
 
@@ -27,8 +30,9 @@ class StsRawTPCPad : public TObject
         // Float_t GetY();
         
     private:
-        UShort_t mAget;
-        UShort_t mChannel;
+        UShort_t mAgetID;
+        UShort_t mChannelID;
+        UShort_t mPadID;
         UShort_t mADC[TIMEBUCKET];
 
     ClassDef(StsRawTPCPad, 1)
