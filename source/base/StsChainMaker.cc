@@ -231,13 +231,13 @@ Int_t StsChainMaker::MakeOnline()
     cout << "  StsChainMaker::MakeOnline() current event: " << mCurrentEventID << endl;
 
     if(mEventNum != 0 && mCurrentEventID == -1){
-        while(mCurrentEventID == mEventNum){
+        while(mCurrentEventID != mEventNum){
             if(!mDecoder->Make()){
                 mDecoder -> SetOnlineFile(mInputFile);
                 cout << "not mKae" << endl;
             }
             mCurrentEventID = mDecoder -> GetEventNumber();
-            cout << " start " << endl;
+            cout << " start " << " " << mCurrentEventID << endl;
         }
 
         TIter iter(GetListOfTasks());
