@@ -219,6 +219,9 @@ Int_t StsChainMaker::InitOnline()
     mDst -> SetTrigger(GetTrigger());
     mDst -> Init();
 
+    mTree = new TTree("StsDst", "StsDst");
+    mDst -> CreateDstArray(mTree);
+
     mDecoder = new StsDecoder();
     mDecoder -> Init();
     mDecoder -> SetOnlineFile(mInputFile);
@@ -228,36 +231,29 @@ Int_t StsChainMaker::InitOnline()
 
 Int_t StsChainMaker::MakeOnline()
 {
-    cout << "  StsChainMaker::MakeOnline() current event: " << mCurrentEventID << endl;
+    int treeEventNum = mTree->GetEntriesFast();
 
-    if(mEventNum != 0 && mCurrentEventID == -1){
-        while(mCurrentEventID != mEventNum){
+    cout << " 1 " << treeEventNum << " " << mEventNum << " " << mCurrentEventID << endl;
+
+    if(treeEventNum == 0){
+        if(!mDecoder->Make()){
+            mDecoder -> SetOnlineFile(mInputFile);
+        }
+        FillDst();
+    }
+    if(mEventNum > treeEventNum){
+        while(treeEventNum != mEventNum){
             if(!mDecoder->Make()){
                 mDecoder -> SetOnlineFile(mInputFile);
-                cout << "not mKae" << endl;
             }
-            mCurrentEventID = mDecoder -> GetEventNumber();
-            cout << " start " << " " << mCurrentEventID << endl;
-        }
+            FillDst();
 
-        TIter iter(GetListOfTasks());
-        StsMaker* maker;
-        while ( (maker = dynamic_cast<StsMaker*>(iter())) ) {
-            cout << "StsChainMaker::Make() --- " << maker -> GetName() << " is Running" << endl;
-            maker -> Make();
+            treeEventNum = mTree->GetEntriesFast();
+            cout << " start " << " " << mCurrentEventID << " " << treeEventNum << endl;
         }
-
-        return 1;
     }
 
-    cout << " decoder make " << endl;
-    if(!mDecoder->Make()){
-        mDecoder -> SetOnlineFile(mInputFile);
-        MakeOnline();
-    }
-
-    cout << "decoder good " << endl;
-    mCurrentEventID = mDecoder -> GetEventNumber();
+    mTree->GetEntry(mEventNum);
 
     TIter iter(GetListOfTasks());
     StsMaker* maker;
@@ -307,6 +303,11 @@ Int_t StsChainMaker::FillDst()
 {
     if(mTree -> Fill()){return 1;}
     return 0;
+}
+
+Int_t StsChainMaker::ReadDst()
+{
+    // mDst = 
 }
 
 void StsChainMaker::Print()

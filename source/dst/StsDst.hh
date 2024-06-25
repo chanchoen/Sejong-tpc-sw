@@ -27,7 +27,7 @@ class StsDst : public TObject
 
         Int_t Init();
         Int_t CreateDstArray(TTree* tree);
-        Int_t LinkDstArray(TTree* tree);
+        Int_t ReadDstArray(TTree* tree);
 
         void SetStageFlag(int stageFlag = kDaqStage);
         void SetTrigger(StsTrigger* trig);
