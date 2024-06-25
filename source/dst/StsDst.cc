@@ -37,14 +37,14 @@ Int_t StsDst::CreateDstArray(TTree* tree)
     return 1;
 }
 
-Int_t StsDst::LinkDstArray(TTree* tree)
+Int_t StsDst::ReadDstArray(TTree* tree)
 {
-//     if(mRawTPCPadArray && mStageFlag == kRawStage){
-//         tree -> Branch("StsRawTPCPad", &mRawTPCPadArray);
-//     }
-//     if(mRecoTPCPadArray && mStageFlag == kRawStage){
-//         tree -> Branch("StsRecoTPCPad", &mRecoTPCPadArray);
-//     }
+    if(mRawTPCPadArray && mStageFlag == kRawStage){
+        tree -> SetBranchAddress("StsRawTPCPad", &mRawTPCPadArray);
+    }
+    if(mRecoTPCPadArray && mStageFlag == kRawStage){
+        tree -> Branch("StsRecoTPCPad", &mRecoTPCPadArray);
+    }
     return 1;
 }
 

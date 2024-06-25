@@ -62,6 +62,7 @@ class StsChainMaker : public StsMaker, public StsUtil
 		Int_t InitWriteDst(int runIdx);
 		Int_t FinishWriteDst();
 		Int_t FillDst();
+		Int_t ReadDst();
 		Int_t FillRunInfo();
 
 		void Print();
