@@ -1,0 +1,15 @@
+
+build
+
+*.txt
+
+data
+*.root
+*.graw
+
+figures
+*.pdf
+*.png
+*.eps
+*.jpg
+*.jpeg
